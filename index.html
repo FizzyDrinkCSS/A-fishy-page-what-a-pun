@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Title</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ <center>
+  <button onclick="openGameAndClose()" class="modern-pop-button"> 
+    CLICK ME!
+  </button>
+  
+  <style>
+    /* CSS Styles for the modern button and animation */
+    .modern-pop-button {
+      /* Modern Look: Gradient, Rounded, Shadow */
+      background: linear-gradient(45deg, #39FF14, #00FF88);
+      color: #1a1a1a; /* Dark text for contrast */
+      border: none;
+      padding: 15px 30px;
+      vertical-align: middle;
+      font-size: 20px;
+      font-weight: bold;
+      width: 80%; /* Slightly less than 100% for better spacing */
+      cursor: pointer;
+      border-radius: 50px; /* Pill shape for modern look */
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+      transition: transform 0.1s ease, box-shadow 0.3s ease; /* Smooth transition */
+      
+      /* Colorful Pop Animation when clicked (Active State) */
+      /* This scales the button down slightly and changes the shadow color briefly */
+      &:active {
+        transform: scale(0.95);
+        box-shadow: 0 0px 30px rgba(255, 0, 100, 0.8); /* "Pop" with a vibrant pink shadow */
+      }
+
+      /* Subtle Hover Effect */
+      &:hover {
+        box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6);
+      }
+    }
+  </style>
+
+  <script>
+    
+    function openGameAndClose() {
+      var win = window.open();
+      if (win) {
+        var url = "https://google.com";
+        var iframe = win.document.createElement('iframe');
+        iframe.style.width = "100vw";
+        iframe.style.height = "100vh";
+        iframe.style.position = "fixed";
+        iframe.style.top = "0";
+        iframe.style.left = "0";
+        iframe.style.border = "none";
+        iframe.src = url;
+        win.document.body.style.margin = "0";
+        win.document.body.style.padding = "0";
+        win.document.body.style.overflow = "hidden";
+        win.document.body.appendChild(iframe);
+
+
+        window.close();
+        
+     
+    }
+  </script>
+</center>
+</body>
+</html>
