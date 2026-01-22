@@ -1,69 +1,739 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FISH</title>
+  <meta charset="utf-8" />
+  <title>Neon Fish Reference Center</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css">
+  <style>
+:root { --back-black: #0a0d13; --panel-dark: #15181f; --sidebar-dark: #181a23; --border-dark: #232748; --neon-cyan: #22ffe2; --neon-pink: #da39e0; --neon-yellow: #ffe975; --neon-blue: #38a9ff; --subtle-cyan: #2deecb; --subtle-pink: #b368e0; --accent: #44fafa; --faded: #4b5170; --text-white: #f5faff; --text-gray: #b6c4cc; --side-highlight: #181c29; --font-family:'Orbitron', 'Segoe UI', 'Arial', sans-serif; }
+html,body { background: var(--back-black) !important; color: var(--text-white); font-family: var(--font-family);}
+header { background: var(--panel-dark); padding: 16px 10px 10px 10px; text-align: center; border-bottom: 2px solid var(--border-dark); box-shadow: none; user-select: none; cursor: pointer;}
+header div:first-child { font-size:1.35rem; font-weight:700; color: var(--neon-cyan); letter-spacing:2px;}
+header div:nth-child(2) { font-size:0.93rem; color: var(--neon-yellow); text-shadow: 0 0 2px var(--subtle-cyan);}
+#main-wrap { display: flex; gap: 14px; max-width: 1200px; margin: 20px auto 0 auto; padding: 0 12px;}
+#sidebar { width: 245px; background: var(--sidebar-dark); border: 1px solid var(--border-dark); border-radius: 10px; padding: 13px 9px; box-shadow: none;}
+#sidebar details { margin-bottom: 8px;}
+#sidebar summary { font-weight: 700; padding: 5px 6px; border-radius: 6px; background: var(--side-highlight); color: var(--neon-yellow); text-shadow: 0 0 2px var(--subtle-cyan); outline: 0;}
+#sidebar button { display: block; width: 100%; text-align: left; margin: 6px 0; padding: 8px 8px; border-radius: 6px; border: 1px solid var(--border-dark); background: #151923; cursor: pointer; color: var(--neon-cyan); font-weight: 600; transition: background 0.15s, box-shadow 0.2s; font-family: inherit; text-shadow: none;}
+#sidebar button:hover, #sidebar button.active-section { background: #202f31; color: var(--neon-yellow); border-color: var(--neon-cyan);}
+#sidebar .sidebtn { background: none; border: none; color: var(--neon-blue); font-weight:700; text-decoration: underline; padding:7px 0;}
+#maincontent { flex:1; min-width:0;}
+#searchbar-container { display:flex; justify-content:center; gap:8px; margin:16px 0 10px 0;}
+#searchbar { width:70%; max-width:500px; padding: 11px 13px; border-radius: 13px; border: 2px solid var(--subtle-cyan); background: #12171f; color: var(--accent); font-weight:600; font-size: 1.02em; transition: border 0.15s;}
+#searchbar:focus { border: 2px solid var(--neon-yellow); }
+#search-btn { color: var(--neon-pink) !important; font-weight:bold; letter-spacing:1px; background: #150f25 !important; border-radius:8px; border:1px solid var(--subtle-pink); padding:10px 14px; cursor:pointer; transition: border 0.15s;}
+#search-btn:hover { border:1.5px solid var(--neon-pink);}
+#search-results { max-width: 740px; margin: 6px auto 0; display: none; background: #16192b; border: 1px solid var(--neon-cyan); border-radius: 9px; padding: 5px 12px 10px 16px; color: var(--text-white); position: absolute; left: 50%; transform: translateX(-50%); z-index: 20;}
+main { background: var(--panel-dark); padding: 18px; border-radius: 13px; border: 1px solid var(--border-dark); box-shadow: none;}
+section.tool { display: none;}
+section.tool.active { display: block; animation: fadein 0.3s;}
+@keyframes fadein { 0%{opacity:0;} 100%{opacity:1;} }
+h2, h3 { color: var(--neon-pink); font-family: inherit; text-shadow: 0 0 13px var(--neon-cyan);}
+label { display: block; font-weight: 700; margin-top: 11px; color: var(--neon-yellow); text-shadow: none;}
+input[type="text"],input[type="number"],textarea,select { width:100%; padding:9px; border-radius:7px; border:1.2px solid var(--border-dark); background:#171d25; color: var(--neon-blue); box-sizing:border-box; font-size:1em; font-family:inherit; margin-top:5px;}
+input.short { width:8.4em; display:inline-block; margin-right:8px }
+button.action { background: var(--neon-cyan); color: #171d1d !important; border: none; padding: 10px 15px; border-radius: 9px; cursor: pointer; font-size: 1.02em; font-weight: bold; margin-top: 10px; margin-bottom: 5px; box-shadow: none; text-shadow: none; transition: filter 0.15s;}
+button.action:hover { filter: brightness(114%) drop-shadow(0 0 8px var(--neon-yellow)); }
+.result, .output { background: #0d151f; border: 1px dotted var(--neon-cyan); padding: 13px; border-radius: 7px; white-space: pre-wrap; margin-top: 9px; font-family: monospace; color: var(--neon-yellow); font-size: 1.05em; box-shadow: none;}
+.secondary-note { color: var(--faded); font-size: 0.99rem; margin-top:8px;}
+hr { border: none; border-top: 1px solid var(--subtle-cyan); margin: 19px 0;}
+a{ color:var(--neon-cyan); text-decoration:underline; }
+a:hover{ color:var(--neon-yellow); }
+@media(max-width:980px){ #main-wrap{ flex-direction:column; padding:0 8px } #sidebar{ width:100% } }
+::-webkit-scrollbar { width: 10px; background: #131619;}
+::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 6px; }
+code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-family:monospace; color:var(--neon-cyan);}
+  </style>
 </head>
 <body>
-<center>
-  <button onclick="openGameAndClose()" class="modern-pop-button"> 
-    CLICK ME!
-  </button>
-  
-  <style>
-    .modern-pop-button {
-      background: linear-gradient(45deg, #39FF14, #00FF88);
-      color: #1a1a1a;
-      border: none;
-      padding: 15px 30px;
-      margin-top: 20px;
-      font-size: 20px;
-      font-weight: bold;
-      width: 80%;
-      cursor: pointer;
-      border-radius: 50px;
-      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
-      transition: transform 0.1s ease, box-shadow 0.3s ease;
-    }
+<header id="top-title">
+  <div>Fish Ref</div>
+  <div> Recognise this? Very Fishy!</div>
+</header>
+<div id="searchbar-container">
+  <input id="searchbar" placeholder="Search facts, tools, or fishy pages..." autocomplete="off" />
+  <button id="search-btn">Search</button>
+</div>
+<div id="search-results" aria-live="polite"></div>
+<div id="main-wrap">
+  <nav id="sidebar" aria-label="Navigation">
+    <details open><summary>Fact Shoals</summary>
+      <button class="section-link" data-section="formulas-section">Fish Factarium</button>
+    <details open><summary>Fish Brains</summary>
+      <button class="section-link" data-section="calc-section">Factulator</button>
+      <button class="section-link" data-section="quad-section">Gillactic Solver</button>
+      <button class="section-link" data-section="factoring-section">Species Sorter</button>
+      <button class="section-link" data-section="gcf-section">Greatest Carp/Fish Match</button>
+      <button class="section-link" data-section="fraction-section">Scale Simplifier</button>
+      <button class="section-link" data-section="seq-section">Pattern Tracker</button>
+      <button class="section-link" data-section="decimal-section">Convert: Scales → Fins</button>
+    </details>
+    <details><summary>Fish Forms</summary>
+      <button class="section-link" data-section="derivative-section">Derive-a-Fin</button>
+      <button class="section-link" data-section="graph-section">Graphstream</button>
+      <button class="section-link" data-section="matrix-section">School Matrix</button>
+      <button class="section-link" data-section="eigen-section">Eigenfins (2×2)</button>
+      <button class="section-link" data-section="complex-section">Luminous Mixer</button>
+    </details>
+    <details><summary>Ocean Geomefishtics</summary>
+      <button onclick="triangleGateFish()">Triangle Tuna Solver (locked)</button>
+      <button class="section-link" data-section="percent-section">Percent Perchulator</button>
+    </details>
+    <details><summary>Fish Statistics & Probability</summary>
+      <button class="section-link" data-section="stat-section">Statistics Pool</button>
+      <button class="section-link" data-section="prob-section">Combinashoal</button>
+      <button class="section-link" data-section="prime-section">Prime Poll</button>
+    </details>
+    <details><summary>Aquatic Science & Units</summary>
+      <button class="section-link" data-section="phys-section">Fishics Solver</button>
+      <button class="section-link" data-section="unit-section">Fin Converter</button>
+    </details>
+    <details><summary>Rare & Fun Finds</summary>
+      <button class="section-link" data-section="eigen-section">Eigenfish</button>
+      <button class="section-link" data-section="primeproof-section">Prime Guppy Proof</button>
+      <button class="section-link" data-section="latex-section">LaTeX — Luminaria</button>
+      <button class="section-link" data-section="plot3d-section">3D Fin Display</button>
+    </details>
+    <details><summary>Aquanotes & Links</summary>
+      <button class="section-link" data-section="notebook-section">Tank Notes</button>
+      <button class="section-link" data-section="college-section">Fish Research Links</button>
+    </details>
+    <details><summary>Themes</summary>
+      <button onclick="applyTheme('default')">Default</button>
+      <button onclick="applyTheme('dark')">Deep Black</button>
+      <button onclick="applyTheme('minimal')">Bare Reef</button>
+      <button onclick="applyTheme('retro')">Aquatic Arcade</button>
+      <button onclick="applyTheme('neonfish')">Neon Fish</button>
+    </details>
+  </nav>
+  <div id="maincontent">
+    <main id="tools-container">
+      <!-- Full Fishified Section List -->
+      <section id="formulas-section" class="tool active">
+        <h2>Fish Factarium – A Megaschool of Facts</h2>
+        <div>
+          <details open>
+            <summary>Bony Fish Order</summary>
+            <ul>
+              <li><b>Fact:</b> There are over 34,000 fish species on Earth.</li>
+              <li><b>Fact:</b> The coelacanth is a living fossil, thought extinct until 1938.</li>
+              <li><b>Fact:</b> Seahorses are the only species in which the males give birth.</li>
+              <li><b>Fact:</b> Mudskippers can walk on land and breathe through their skin.</li>
+              <li><b>Fact:</b> Some deep-sea anglerfish have glowing “fishing rods” to attract prey.</li>
+              <li><b>Fact:</b> Archerfish spit jets of water to hunt insects above the water’s surface.</li>
+              <li><b>Fact:</b> Pufferfish can inflate themselves to deter predators and some are deadly poisonous.</li>
+              <li><b>Fact:</b> The ocean sunfish can weigh more than a car—up to 2,200 kg!</li>
+              <li><b>Fact:</b> Clownfish can change sex from male to female if the dominant female disappears.</li>
+              <li><b>Fact:</b> Electric eels generate shocks up to 600 volts.</li>
+            </ul>
+          </details>
+          <details>
+            <summary>Cartilaginous</summary>
+            <ul>
+              <li><b>Fact:</b> Sharks have been on earth longer than trees, for over 400 million years.</li>
+              <li><b>Fact:</b> The Greenland shark can live well over 400 years.</li>
+              <li><b>Fact:</b> Rays have flattened bodies to hide in sand and ambush prey.</li>
+              <li><b>Fact:</b> The sawfish’s snout is edged with toothy saws for stunning prey.</li>
+              <li><b>Fact:</b> Some sharks can detect a drop of blood in an Olympic-sized pool.</li>
+            </ul>
+          </details>
+          <details>
+            <summary>Electric & Luminous</summary>
+            <ul>
+              <li><b>Fact:</b> Lanternfish use photophores (light organs) to camouflage from predators below.</li>
+              <li><b>Fact:</b> The flashlight fish controls bioluminescence with a “shutter” skin flap.</li>
+              <li><b>Fact:</b> Ponyfish flash neon “smiles” when communicating with mates.</li>
+            </ul>
+          </details>
+          <details>
+            <summary>Extreme Survivors</summary>
+            <ul>
+              <li><b>Fact:</b> Antarctic icefish have clear blood with natural antifreeze proteins.</li>
+              <li><b>Fact:</b> Desert pupfish survive extreme drought by burying eggs in the mud.</li>
+              <li><b>Fact:</b> The arapaima can gulp air to survive in oxygen-poor Amazon waters.</li>
+            </ul>
+          </details>
+          <details>
+            <summary>Famous Fins</summary>
+            <ul>
+              <li><b>Fact:</b> Nemo was based on a real clownfish species, Amphiprion ocellaris.</li>
+              <li><b>Fact:</b> The parrotfish bites coral and poops out sand, building beaches!</li>
+              <li><b>Fact:</b> Goldfish can distinguish between Beethoven and Bach in a lab study.</li>
+              <li><b>Fact:</b> Betta fish can jump out of tanks—always use lids!</li>
+            </ul>
+          </details>
+          <details>
+            <summary>Schooling & Social Life</summary>
+            <ul>
+              <li><b>Fact:</b> A group of fish is called a school or shoal.</li>
+              <li><b>Fact:</b> Some species school by the millions to confuse predators.</li>
+              <li><b>Fact:</b> Cleaner wrasses “pick” parasites from other fish, forming cleaning stations.</li>
+            </ul>
+          </details>
+          <details open>
+            <summary>Record Breakers</summary>
+            <ul>
+              <li><b>Fact:</b> The whale shark is the largest living fish, reaching over 12 meters.</li>
+              <li><b>Fact:</b> The paedocypris is the world’s smallest fish, under 8mm as adults.</li>
+              <li><b>Fact:</b> Sailfish can swim at 68 mph—the fastest fish on record.</li>
+              <li><b>Fact:</b> Some flying fish can glide over 200 meters in one leap.</li>
+            </ul>
+          </details>
+        </div>
+      </section>
+      <section id="calc-section" class="tool">
+        <h2>Factulator</h2>
+        <label>Type a fish question or “Gills+Fins” to get a fact:</label>
+        <input id="calc-expr" placeholder="e.g. Why are lionfish venomous?" autocomplete="off"/>
+        <button class="action" onclick="evalCalcFish()">Get Fish Fact</button>
+        <div class="result" id="calc-result">Pufferfish are the only vertebrates capable of producing potent tetrodotoxin.</div>
+      </section>
+      <section id="quad-section" class="tool">
+        <h2 id="QS" onclick="handleClickFishy()">Gillactic Solver</h2>
+        <label>Fish Fact Equation: species² + genus × fins = fact</label>
+        <input id="quad-a" class="short" type="number" value="1">
+        <input id="quad-b" class="short" type="number" value="0">
+        <input id="quad-c" class="short" type="number" value="0">
+        <button class="action" onclick="solveQuadFish()">Solve for FISH</button>
+        <div class="result" id="quad-result">The cardinalfish ‘mouthbroods’ eggs – the male keeps them safe in his mouth until hatching.</div>
+      </section>
+      <section id="factoring-section" class="tool">
+        <h2>Species Sorter</h2>
+        <label>Enter a fishy value above 2:</label>
+        <input id="factoring-n" type="number" value="60" />
+        <button class="action" onclick="factorFish()">Sort! (Get Fish Facts)</button>
+        <div class="result" id="factoring-result">The mudskipper’s eyes can independently look at land and water, giving it a split vision.</div>
+      </section>
+      <section id="gcf-section" class="tool">
+        <h2>Greatest Carp/Fish Match</h2>
+        <label>Gallons of water (comma or space):</label>
+        <input id="gcf-a" value="120, 160, 360" />
+        <button class="action" onclick="getGcfLcmFish()">Find Matching Fish</button>
+        <div class="result" id="gcf-result">The Oscar fish can recognize its owner’s face and even beg for food.</div>
+      </section>
+      <section id="fraction-section" class="tool">
+        <h2>Scale Simplifier</h2>
+        <label>Fin Count / Gill Count</label>
+        <input id="frac-num" type="number" value="7" class="short" />
+        <input id="frac-den" type="number" value="11" class="short" />
+        <button class="action" onclick="simplifyFractionFish()">Simplify Fact</button>
+        <div class="result" id="frac-result">The spotted gar has existed almost unchanged for over 100 million years.</div>
+      </section>
+      <section id="seq-section" class="tool">
+        <h2>Pattern Tracker</h2>
+        <label>Fishy sequence (comma / space):</label>
+        <input id="seq-input" value="swim, spawn, leap, school" />
+        <button class="action" onclick="sequenceToolFish()">Analyze Schooling</button>
+        <div class="result" id="seq-result">Some cichlids protect eggs by moving them to a new spot if threatened.</div>
+      </section>
+      <section id="decimal-section" class="tool">
+        <h2>Convert: Scales → Fins</h2>
+        <input id="decval" type="number" step="any" value="0.743" />
+        <button class="action" onclick="decToFracFish()">Convert to Fishy Fact</button>
+        <div class="result" id="decfrac-result">Mandarinfish are one of the only vertebrates to truly produce blue skin pigment.</div>
+      </section>
+      <section id="derivative-section" class="tool">
+        <h2>Derive-a-Fin</h2>
+        <label>Describe a fish (e.g. “blue neon tetra”):</label>
+        <input id="deriv-expr" value="neon blue tang" />
+        <button class="action" onclick="derivPolyFish()">Fish Detail</button>
+        <div class="result" id="deriv-result">The blue tang changes color as it grows, and was made famous by film.</div>
+      </section>
+      <section id="graph-section" class="tool">
+        <h2>Graphstream (2D Shoaling)</h2>
+        <label>y = FISH(x)</label>
+        <input id="graph-f" value="swim(x)" />
+        <label>From / To</label>
+        <input id="graph-minx" class="short" type="number" value="-7" /> <input id="graph-maxx" class="short" type="number" value="7" />
+        <button class="action" onclick="drawPlotFish()">Plot School</button>
+        <div style="margin-top:8px">
+          <canvas id="graph-canvas" width="680" height="320" style="background:#0f1846;border:1px solid #eaffcc;border-radius:10px"></canvas>
+        </div>
+        <div id="graph-msg" class="result">Schools of herring can contain over a billion fish!</div>
+      </section>
+      <section id="matrix-section" class="tool">
+        <h2>School Matrix</h2>
+        <label>Matrix: e.g. guppy tetra; loach danio</label>
+        <input id="matrix-input" value="guppy tetra; loach danio" />
+        <label>Operation</label>
+        <select id="matrix-op"><option value="det">School Size</option><option value="trans">Rotate Shoal</option></select>
+        <button class="action" onclick="matrixToolFish()">Matrix Fact</button>
+        <div class="result" id="matrix-result">Some gobies form monogamous pairs and defend a burrow together for years.</div>
+      </section>
+      <section id="eigen-section" class="tool">
+        <h2>Eigenfins (2×2)</h2>
+        <label>Fish Matrix: e.g. clown loach; tiger barb</label>
+        <input id="eigen-matrix" value="clown loach; tiger barb" />
+        <button class="action" onclick="eigen2x2Fish()">Show Eigenfacts</button>
+        <div class="result" id="eigen-output">Moray eels have a second set of jaws, called pharyngeal jaws, for catching prey.</div>
+      </section>
+      <section id="complex-section" class="tool">
+        <h2>Luminous Mixer</h2>
+        <label>z1 = a + bi (fin-thusiasm), z2 = c + di (scale-ocity)</label>
+        <input id="complex-r1" class="short" type="number" value="3"> <input id="complex-i1" class="short" type="number" value="7"><br>
+        <input id="complex-r2" class="short" type="number" value="10"> <input id="complex-i2" class="short" type="number" value="2">
+        <select id="complex-op"><option value="add">Mix</option><option value="sub">Subtract</option><option value="mul">Multiply</option><option value="div">Divide</option></select>
+        <button class="action" onclick="complexCalcFish()">Mix Fish Traits</button>
+        <div class="result" id="complex-result">The archerfish can adjust its water jet for refraction to hit prey above water.</div>
+      </section>
+      <section id="triangle-section" class="tool">
+        <h2>Triangle Tuna Solver (SSS, SAS, ASA, AAS, SSA)</h2>
+        <div class="secondary-note">Input sides/fins and angles/gill cover: Get a tuna trivia fact.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="tri_a" class="short" placeholder="caudal fin (side)" type="number" />
+          <input id="tri_b" class="short" placeholder="pectoral fin (side)" type="number" />
+          <input id="tri_c" class="short" placeholder="dorsal fin (side)" type="number" />
+          <input id="tri_A" class="short" placeholder="Angle F" type="number" />
+          <input id="tri_B" class="short" placeholder="Angle S" type="number" />
+          <input id="tri_C" class="short" placeholder="Angle H" type="number" />
+        </div>
+        <div style="margin-top:8px"><button class="action" onclick="solveTriangleAllFish()">Get Tuna Fact</button></div>
+        <div class="result" id="tria-all-result">Tuna can reach speeds up to 70 km/h and migrate thousands of kilometers yearly.</div>
+      </section>
+      <section id="percent-section" class="tool">
+        <h2>Percent Perchulator</h2>
+        <div>What percent of a shoal do parrotfish represent? <input id="perc-part" class="short" type="number" value="11">% of <input id="perc-whole" class="short" type="number" value="99">? <button class="action" onclick="percentCalcFish()">Calculate</button></div>
+        <div class="result" id="percent-result">Parrotfish help create white sand beaches by excreting sand after eating coral.</div>
+        <hr>
+        <div><input id="perc-num" class="short" type="number" value="18"> is what percent of a neon tetra school of <input id="perc-total" class="short" type="number" value="60">? <button class="action" onclick="percent2CalcFish()">Find Out!</button></div>
+        <div class="result" id="percent2-result">Neon tetras’ blue stripe glows vividly in the dark waters of the Amazon.</div>
+      </section>
+      <section id="stat-section" class="tool">
+        <h2>Statistics Pool</h2>
+        <label>Enter fish tallies (comma / space):</label>
+        <input id="stat-numbers" value="7,12,5,20,9,13" />
+        <button class="action" onclick="statToolFish()">Pool Pond Facts</button>
+        <div class="result" id="stat-result">Goldfish have been bred for over a thousand years—there are dozens of fancy varieties.</div>
+      </section>
+      <section id="prob-section" class="tool">
+        <h2>Combinashoal</h2>
+        <div>Combinations (Cn,r): n=<input id="comb-n" class="short" type="number" value="5"> r=<input id="comb-r" class="short" type="number" value="2"><button class="action" onclick="doCombFish()">Combinashoal</button></div>
+        <div>Permutations (Pn,r): n=<input id="perm-n" class="short" type="number" value="5"> r=<input id="perm-r" class="short" type="number" value="2"><button class="action" onclick="doPermFish()">Permutank!</button></div>
+        <div class="result" id="prob-result">The Siamese fighting fish is known for its vivid colors and territorial behavior.</div>
+      </section>
+      <section id="prime-section" class="tool">
+        <h2>Prime Poll</h2>
+        <div>From <input id="prime-from" class="short" type="number" value="1"> to <input id="prime-to" class="short" type="number" value="100"><button class="action" onclick="findPrimesFish()">Find “Prime” Fish</button></div>
+        <div class="result" id="prime-result">The lancetfish has a long, sail-like dorsal fin and is found in deep ocean waters.</div>
+      </section>
+      <section id="unit-section" class="tool">
+        <h2>Fin Converter (basic units)</h2>
+        <input id="unit-value" type="number" value="1" class="short" />
+        <select id="unit-from">
+          <option value="scales">scales</option><option value="fins">fins</option><option value="teeth">teeth</option><option value="cm">cm</option><option value="kg">kg</option>
+        </select>
+         to
+        <select id="unit-to">
+          <option value="scales">scales</option><option value="fins">fins</option><option value="teeth">teeth</option><option value="cm">cm</option><option value="kg">kg</option>
+        </select>
+        <button class="action" onclick="convertUnitsFish()">Convert!</button>
+        <div class="result" id="unit-result">The Asian arowana is considered a good luck fish in many cultures.</div>
+      </section>
+      <section id="phys-section" class="tool">
+        <h2>Fishics Formula Solver (simple)</h2>
+        <label>Pick a fish fact category</label>
+        <select id="phys-eq">
+          <option value="speed">Speed & Migration</option>
+          <option value="depth">Deep Dwellers</option>
+          <option value="color">Coloration</option>
+          <option value="defense">Defense Mechanisms</option>
+        </select>
+        <label>Type keywords for a fact</label>
+        <input id="phys-vars" value="swimming, migration, ?" />
+        <button class="action" onclick="physSolverFish()">Reel It In</button>
+        <div class="result" id="phys-result">Some fish, like the lanternshark, glow neon blue in the deep sea.</div>
+      </section>
+      <section id="notebook-section" class="tool">
+        <h2>Tank Notes</h2>
+        <textarea id="notebook" class="notebook" placeholder="Write your own rare fish fact…"></textarea>
+        <div style="margin-top:8px"><button class="action" onclick="saveNotesFish()">Save</button> <button class="action" onclick="clearNotesFish()">Clear</button></div>
+        <div id="notes-msg" class="output"></div>
+      </section>
+      <section id="college-section" class="tool">
+        <h2>Fish Research Links</h2>
+        <ul>
+          <li><a href="https://www.fishbase.se/" target="_blank">FishBase — Encyclopedia of Fishes</a></li>
+          <li><a href="https://ocean.si.edu/ocean-life/fish" target="_blank">Smithsonian Ocean: Fish</a></li>
+          <li><a href="https://www.nationalgeographic.com/animals/fish/facts" target="_blank">National Geographic: Fish Facts</a></li>
+        </ul>
+      </section>
+      <section id="primeproof-section" class="tool">
+        <h2>Euclid: Infinitely Many Fish (step)</h2>
+        <label>List your favorite fish (comma):</label>
+        <input id="pp-primes" value="clownfish, loach, tetra" />
+        <button class="action" onclick="primeProofStepFish()">Compute School + 1</button>
+        <div id="pp-Q" class="result">Swordfish lose all their scales and teeth by adulthood.</div>
+        <div id="pp-result" class="result">Napoleon wrasse can bite through tough mollusk shells with their strong jaws.</div>
+      </section>
+      <section id="latex-section" class="tool">
+        <h2>LaTeX Demo (KaTeX): Marine Mode</h2>
+        <textarea id="latex-input">\\overline{FishBase}=\\sum_{n=1}^{species} facts</textarea>
+        <button class="action" onclick="renderLatexFish()">Render Luminous</button>
+        <div id="latex-output" class="result" style="font-size:1.1rem">The Asian arowana can leap over 1 meter out of the water to catch prey.</div>
+      </section>
+      <section id="plot3d-section" class="tool">
+        <h2>3D Fin Display (visual)</h2>
+        <label>f(x,y): Use “finnage” for bonus facts</label>
+        <input id="plot3d-f" value="sin(finnage)*cos(shoal)" />
+        <button class="action" onclick="plot3dFish()">Shimmer!</button>
+        <canvas id="plot3d-canvas" width="320" height="320" style="border:1px solid #3ff;border-radius:10px;margin-top:8px"></canvas>
+      </section>
+      <div id="triangle-gate" class="tool" style="display:none;margin-top:12px;padding:12px;border-radius:9px;border:1px solid #39ffe2;background:#181c3e">
+        <h3>Answer this to unlock the Tuna Triangle Solver!</h3>
+        <div id="trig-question" style="font-weight:700;margin:8px 0">If a flying fish glides at 60 meters and a barracuda leaps half as far, how many neon tetra would it take to outswim them both?</div>
+        <input id="trig-user-answer" class="short" />
+        <button class="action" onclick="checkTrigAnswerFish()">Check</button>
+        <div id="trig-feedback" class="result"></div>
+      </div>
+    </main>
+  </div>
+</div>
+<footer style="text-align:center;padding:16px;color:#ffe436;">
+  &copy; 2026 A Fish 
+  <span id="easter-msg" style="display:none;color:#da39e0; margin-left:7px"></span>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+<script>
+// NAV/SEARCH
+function activateSection(sectionId) {
+  document.querySelectorAll('section.tool').forEach(sec => sec.classList.remove('active'));
+  let target = document.getElementById(sectionId);
+  if(target){ target.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'});}
+  document.querySelectorAll('.section-link').forEach(btn=>btn.classList.toggle('active-section', btn.dataset.section===sectionId));
+  document.getElementById('search-results').style.display='none';
+}
+document.querySelectorAll('.section-link').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    activateSection(this.dataset.section);
+  });
+});
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+}
+// SEARCH
+let fishIndex = [];
+function buildFishIndex(){
+  fishIndex.length = 0;
+  document.querySelectorAll('section.tool').forEach(sec => {
+    let toolLabel = sec.querySelector('h2')?.innerText?.trim() || '';
+    let toolId = sec.id || '';
+    let allText = toolLabel;
+    sec.querySelectorAll('li, label, input, .result').forEach(el => { allText += ' ' + el.textContent; });
+    fishIndex.push({section: toolId, label: toolLabel, text: allText});
+  });
+}
+function searchFish(){
+  let q = document.getElementById('searchbar').value.trim().toLowerCase();
+  let searchResults = document.getElementById('search-results');
+  if(!q || q.length<2) { searchResults.style.display = "none"; searchResults.innerHTML = ""; return; }
+  let matches = fishIndex.filter(item => item.text.toLowerCase().includes(q) || item.label.toLowerCase().includes(q));
+  if(matches.length === 0){
+    searchResults.innerHTML = '<div style="padding:9px">No results found…</div>';
+    searchResults.style.display = "block"; return;
+  }
+  searchResults.innerHTML = matches.map((m,i)=>
+    `<div style="margin:2px 0">
+      <a href="#" style="color:var(--neon-cyan);" data-section="${m.section}" class="search-res-link">
+        ${m.label.replace(/</g,"&lt;")}
+      </a>
+      <div style="color:var(--faded);font-size:0.98em;font-family:sans-serif">${m.text.slice(0,70).replace(/</g,"&lt;")}${m.text.length>70?'…':''}</div>
+    </div>`
+  ).join('');
+  searchResults.style.display = "block";
+  document.querySelectorAll('.search-res-link').forEach(l=>{
+    l.addEventListener('click', function(e){
+      e.preventDefault();
+      activateSection(this.dataset.section);
+      searchResults.style.display='none';
+    });
+  });
+}
+document.getElementById('search-btn').addEventListener('click', searchFish);
+document.getElementById('searchbar').addEventListener('input', searchFish);
+window.addEventListener('DOMContentLoaded', ()=>{
+  buildFishIndex();
+  let first = document.querySelector('.tool');
+  if(first) activateSection(first.id);
+});
 
-    /* Separate selectors for better browser reliability */
-    .modern-pop-button:hover {
-      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6);
-    }
-
-    .modern-pop-button:active {
-      transform: scale(0.95);
-      box-shadow: 0 0px 30px rgba(255, 0, 100, 0.8);
-    }
-  </style>
-
-  <script>
-    function openGameAndClose() {
-      var win = window.open();
-      if (win) {
-        var url = "https://fizzydrinkcss.github.io/A-fishy-page-what-a-pun/";
-        var iframe = win.document.createElement('iframe');
-        iframe.style.width = "100vw";
-        iframe.style.height = "100vh";
-        iframe.style.position = "fixed";
-        iframe.style.top = "0";
-        iframe.style.left = "0";
-        iframe.style.border = "none";
-        iframe.src = url;
-        
-        win.document.body.style.margin = "0";
-        win.document.body.style.padding = "0";
-        win.document.body.style.overflow = "hidden";
-        win.document.body.appendChild(iframe);
-
-        // Closes the current tab
-        window.close();
-      } else {
-        alert("Please allow pop-ups for this site to open the game!");
+// All FISH FUNCTIONS/EASTER EGG as shown previously
+function getRandomFishFact(){
+const facts = [
+"A shoal of sardines may contain billions of fish.",
+"The oarfish can grow up to 11 meters long and is rarely seen alive.",
+"Seahorses use their prehensile tails to cling onto seaweed during storms.",
+"The mudskipper breathes through its skin when on land, much like an amphibian.",
+"The red-lipped batfish uses its fins to 'walk' along the ocean floor.",
+"Stargazer fish bury themselves in sand, waiting to ambush prey with an upward burst.",
+"The parrotfish grinds coral with its beak and creates sand beaches as a result.",
+"Cleaner shrimp and fish set up cleaning stations, removing parasites from larger species.",
+"The viperfish has fangs so large it cannot close its mouth completely.",
+"Goblin sharks are sometimes called 'living fossils' due to their ancient lineage.",
+"Some Antarctic fish have natural antifreeze in their blood.",
+"The electric catfish can produce a shock of up to 350 volts.",
+"Groupers can weigh over 400 kg and live for several decades.",
+"Fangtooth fish have the largest teeth proportional to body size in the ocean.",
+"The hatchetfish uses bioluminescence to disappear when viewed from below.",
+"Blind cavefish have evolved to live in total darkness and lost their eyesight.",
+"Some cichlids keep their young in their mouths for protection.",
+"Oscar fish recognize their owner's face and can be hand-fed.",
+"Swordtails can hybridize with platys to make fertile hybrids.",
+"The blue discus is renowned for its iridescent circular body and shy demeanor.",
+"Rainbow trout can see ultraviolet light, invisible to humans.",
+"The peacock flounder can switch its color pattern in seconds to blend in.",
+"Leafy seadragons are masters of camouflage with kelp-like appendages.",
+"The axolotl, or 'Mexican walking fish,' is an entirely aquatic salamander.",
+"Moray eels have a second pair of jaws hidden in their throat, called pharyngeal jaws.",
+"Sailfish are considered the fastest fish in the sea.",
+"The mola mola, or ocean sunfish, often carries loads of parasitic hitchhikers.",
+"Neon tetras are famous for their bright blue and red stripes.",
+"Glass catfish are almost entirely transparent.",
+"Guppies are used worldwide for mosquito control.",
+"Damselfish farm their own 'algae gardens' on coral reefs.",
+"The climbing perch is able to travel short distances overland.",
+"Koi can live more than 50 years—some even over 200.",
+"Some parrotfish change sex as they mature.",
+"The white-spotted pufferfish builds intricate geometric sand patterns to attract mates.",
+"Lungfish can survive in dry mud for years by hibernating.",
+"The Wels catfish may grow bigger than a person and live in European rivers.",
+"The cardinal tetra’s blue and red stripes help it blend in with aquatic plants.",
+"The arapaima must surface regularly to breathe air.",
+"Piranhas are mostly scavengers, despite their fearsome reputation.",
+"Barracudas have been clocked at over 35 kilometers per hour.",
+"Some African cichlids build 'bowers'—sand patterns—to attract mates.",
+"The Atlantic bluefin tuna migrates thousands of miles across the ocean.",
+"The whale shark filter-feeds on plankton and has a mouth more than a meter wide.",
+"Many clownfish live in close partnership with stinging anemones for protection.",
+"Betta fish can jump from tank to tank if lids are not used.",
+"Chimaeras are ancient relatives of sharks with long, whip-like tails.",
+"The fang blenny uses venom to deter predators.",
+"Siamese algae eaters keep aquarium glass free of green slime.",
+"The glass knifefish navigates using electric fields.",
+"Stonefish are among the most venomous fish in the world.",
+"Gars have armored scales and sharp teeth.",
+"Bristlenose plecos help control algae in aquariums.",
+"Mandarinfish are one of the only animals to truly produce blue coloration.",
+"The platypus is not a fish, but it lays eggs and swims like one.",
+"Anglerfish lures glow in the blackness to draw in prey.",
+"Pufferfish teeth never stop growing.",
+"Sculpins can live in both fresh and saltwater.",
+"The lanternshark glows to communicate in the depths.",
+"Some pipefish species also show male pregnancy.",
+"Mantis shrimp are not fish, but have the most complex eyes in the animal kingdom.",
+"The Atlantic cod helped sustain civilizations for centuries.",
+"Lake sturgeon can live over 150 years.",
+"The razorback sucker’s dorsal ridge helps it blend in with river bottoms.",
+"Archerfish can hit a target above water with a sniper-like blast.",
+"The boops boops fish has the silliest name in marine science.",
+"There are more fish species than amphibians, reptiles, birds, and mammals combined.",
+"The round goby is an invasive species in many inland lakes.",
+"Gobiidae is one of the largest fish families, with over 2,000 species.",
+"The mudpuppy is an aquatic salamander, not a fish, but it confuses many.",
+"The glass catfish’s internal organs and skeleton are visible through its body.",
+"The knife fish generates a weak electric field for navigation.",
+"The clown knifefish can swim both forwards and backwards.",
+"The bull shark can live in both freshwater and saltwater.",
+"Saltwater crocodiles often prey on large fish in estuaries.",
+"The Asian stone fish is perfectly camouflaged and highly venomous.",
+"The bearded dragonfish uses a barbel to attract prey.",
+"Alligator gars can survive in water with very little oxygen.",
+"The spiny dogfish is the most abundant shark in the world.",
+"The pike is a top freshwater predator and can grow to over a meter long.",
+"The Atlantic halibut can weigh more than 300 kg.",
+"The four-eyed fish can see above and below water simultaneously.",
+"The Atlantic salmon is anadromous—born in rivers, growing in the sea, returning to spawn.",
+"Some flashlight fish can turn their lights on and off like a blinking neon sign.",
+"The Oscar sends out low-frequency sounds when calling its mate.",
+"The clown triggerfish sports harlequin-like spots and stripes.",
+"The tetraodontidae is the scientific name for pufferfish family.",
+"The gibberish in fish science is not gibberish at all—it's Latin.",
+"Parasitic candiru fish can swim up mammal urethras (don't pee in South American rivers).",
+"The Greenland shark can live for over 400 years, making it the longest-lived vertebrate on Earth.",
+"The sailfish is the fastest swimmer in the ocean, reaching speeds of up to 68 miles per hour.",
+"Parrotfish secrete a mucus cocoon at night to mask their scent from predators.",
+"The mudskipper can spend more than half its life on land using its pectoral fins to walk.",
+"A group of jellyfish is called a 'smack,' while a group of goldfish is called a 'troubling.'",
+"The female deep-sea anglerfish is much larger than the male, who fuses his body to hers for life.",
+"Seahorses are the only animal species where the male gives birth to the young.",
+"The archerfish can spit a jet of water with incredible accuracy to knock insects off overhanging branches.",
+"A shark's skeleton is made entirely of cartilage, not bone.",
+"The lungfish has both gills and a lung, allowing it to survive for years out of water in a dried mud cocoon.",
+"Clownfish are all born male and can change their sex to become the dominant female of the group.",
+"The electric eel can generate a shock of up to 600 volts to stun prey or defend itself.",
+"Tuna are one of the few fish species that are warm-blooded, allowing them to swim in colder waters.",
+"The stonefish is the most venomous fish in the world, with spines that can be fatal to humans.",
+"The whale shark is the largest fish in the sea, growing up to 40 feet in length.",
+"Betta fish can breathe air from the surface thanks to a specialized organ called a labyrinth.",
+"The lionfish has venomous spines that remain toxic even after the fish has died.",
+"Great white sharks can smell a single drop of blood in 25 gallons of water.",
+"The black swallower can eat prey ten times its own mass and twice its length.",
+"Flying fish can glide for up to 650 feet by leaping out of the water and spreading their pectoral fins.",
+"The hagfish produces massive amounts of slime to suffocate predators that try to eat it.",
+"Salmon navigate back to their home rivers using their highly developed sense of smell.",
+"The cookiecutter shark leaves perfectly circular, plug-like wounds on its prey.",
+"Hammerhead sharks have 360-degree vision due to the placement of their eyes.",
+"The ocean sunfish (Mola mola) can lay up to 300 million eggs at a single time.",
+"Damselfish are known to 'farm' algae patches, weeding out the species they don't like to eat.",
+"The manta ray has the largest brain-to-body ratio of any fish.",
+"Cleaner wrasses set up 'stations' where larger fish line up to have parasites nibbled off.",
+"The sawfish has a snout lined with teeth-like scales that can detect electric fields.",
+"Moray eels have a second set of jaws in their throat called pharyngeal jaws to help swallow prey.",
+"Goldfish can see both infrared and ultraviolet light, which is invisible to humans.",
+"The glass catfish is almost entirely transparent, making its skeleton and internal organs visible.",
+"Triggerfish can lock their dorsal spines to wedge themselves into tight crevices for protection.",
+"The remora uses a suction disk on its head to hitch rides on sharks, whales, and turtles.",
+"Sturgeon are often called 'living fossils' because they have changed very little in 200 million years.",
+"The sarcastic fringehead opens its massive mouth in a wide display to defend its territory.",
+"Pufferfish contain tetrodotoxin, a poison 1,200 times more deadly than cyanide.",
+"The tripod fish 'stands' on the seafloor using its elongated pelvic and caudal fins.",
+"Coelacanths were thought to be extinct for 65 million years until one was caught in 1938.",
+"The leafy seadragon looks like floating seaweed to camouflage itself from predators.",
+"Boxfish have a hard, bony 'carapace' that acts like a suit of armor.",
+"The ghost pipefish hangs upside down to mimic blades of seagrass.",
+"Some species of killifish lay eggs that can survive for months in dried-up mud.",
+"The dragonet has no scales and is protected by a foul-tasting, toxic mucus.",
+"The giant oarfish can reach lengths of over 30 feet and is likely the source of sea serpent myths.",
+"Catfish have taste buds all over their bodies, essentially making them 'swimming tongues.'",
+"The blobfish’s gelatinous body is slightly less dense than water, allowing it to float without effort.",
+"Wobbegong sharks are masters of camouflage, looking exactly like shaggy rugs on the reef floor.",
+"The female cuckoo catfish sneaks its eggs into the mouths of cichlids to be raised.",
+"Lampreys are jawless fish that use a sucker-like mouth to latch onto other fish and feed.",
+"The red-lipped batfish is a poor swimmer and prefers to walk on the ocean floor using its fins.",
+"Zebrafish share about 70% of their genes with humans and are used extensively in medical research.",
+"The dragonfish has teeth on its tongue to ensure prey cannot escape.",
+"The flashlight fish uses bioluminescent bacteria under its eyes to communicate and hunt.",
+"Flatfish, like flounder, are born symmetrical but have one eye migrate to the other side as they grow.",
+"The opah is the only known fully warm-blooded fish.",
+"Barracudas are attracted to shiny objects because they resemble the scales of their prey.",
+"The convict blenny looks like a sea snake as a juvenile to ward off predators.",
+"Bull sharks can thrive in both saltwater and freshwater, often swimming far up rivers.",
+"The handfish 'walks' along the seabed on fins that resemble human hands.",
+"The needlefish can jump out of the water at high speeds, occasionally injuring boaters.",
+"Male jawfish carry fertilized eggs in their mouths until they are ready to hatch.",
+"The guitarfish is a prehistoric-looking creature that is a bridge between sharks and rays.",
+"The climbing perch can stay out of water for days and even 'climb' low tree branches.",
+"A group of eels is called a 'swarm' or a 'bed.'",
+"The mandarin dragonet is one of the few fish that produces its own blue pigment.",
+"The dwarf lanternshark is the world’s smallest shark, fitting easily in a human hand.",
+"Goliath groupers are large enough to eat small sharks whole.",
+"The wolf eel isn't actually an eel, but a fish with a long, slender body and powerful jaws.",
+"Electric rays can produce a discharge of 220 volts, enough to knock down a human.",
+"The bluehead wrasse starts life as a yellow female and can transform into a blue-headed male.",
+"The telescope goldfish has protruding eyes that cannot actually see very well.",
+"Pipefish are close relatives of seahorses and also have males that brood the young.",
+"The vampire fish (Payara) has fangs that can grow up to six inches long.",
+"The humphead wrasse can live for over 30 years and grow to over six feet long.",
+"The snakehead fish can breathe air and survive on land for up to four days.",
+"The hatchetfish has a thin, blade-like body that allows it to disappear when viewed from below.",
+"A sturgeon's eggs are the source of the world's most expensive caviar.",
+"The convict cichlid is known for being an incredibly protective and aggressive parent.",
+"The butterflyfish uses 'false eyes' near its tail to trick predators into attacking the wrong end.",
+"The spotted garden eel lives in a burrow and looks like a plant swaying in the current.",
+"The swordfish uses its 'sword' to slash and stun prey, not to spear it.",
+"The sarcastic fringehead is named for its aggressive 'sarcastic' temperament.",
+"The flying gurnard has enormous pectoral fins that look like bird wings when spread.",
+"The pearlfish lives inside the rectums of sea cucumbers for protection.",
+"The cookiecutter shark has the largest teeth relative to body size of any shark.",
+"The parrotfish's 'beak' is actually many tiny teeth fused together.",
+"The sheepshead fish has rows of human-like molars used to crush shells.",
+"The black dragonfish is one of the blackest animals on Earth, absorbing 99.95% of light.",
+"The remora’s sucking disk is actually a highly modified dorsal fin.",
+"The smalltooth sawfish can use its saw to detect the heartbeats of prey buried in sand.",
+"The walking catfish can move across land by wiggling its body and using its pectoral fins.",
+"The blind cavefish has lost its eyes entirely, navigating purely through vibrations.",
+"The cod can lay up to 9 million eggs in a single spawning season.",
+"The harlequin filefish mimics the smell of the coral it eats to hide from predators.",
+"The giant trevally is known to leap out of the water to catch birds in flight.",
+"The monkfish has a 'fishing rod' on its head with a fleshy lure to attract prey.",
+"The squirrelfish uses sound to communicate, making clicking and grunting noises.",
+"The ghost shark, or chimaera, has its sex organs located on its forehead.",
+"The bitterling fish lays its eggs inside living freshwater mussels.",
+"Morays use their pharyngeal jaws to drag food down their throat.",
+"The banded archerfish accounts for refraction in its water jet.",
+"Oscars lay eggs on flat stones and guard their fry fiercely.",
+"Groupers can change sex from female to male as they mature.",
+"The whale shark’s skin is covered in thousands of tiny teeth called dermal denticles.",
+"Water temperature has a huge effect on the sex of clownfish offspring.",
+"The Siamese fighting fish puffs up its fins to look menacing when threatened.",
+"Some fish, including the koi, are revered in cultures as spiritual beings.",
+"Bettas build bubble nests for their eggs at the surface of water.",
+"The bump on the Napoleon wrasse’s head grows bigger with age.",
+"Pufferfish are responsible for many unfortunate sushi accidents.",
+"The mahi-mahi's name means 'very strong' in Hawaiian.",
+"The regal tang, aka blue tang, is popular in aquariums and films!",
+"The discus fish’s circular body is designed for river currents.",
+"The Atlantic sturgeon once jumped into boats during spring migration.",
+"Fossil fish date back over 500 million years.",
+"You made it to the last fish fact! Reload for more."
+];
+return facts[Math.floor(Math.random()*facts.length)];
+}
+// All FISH LOGIC
+function evalCalcFish() { document.getElementById('calc-result').textContent = getRandomFishFact(); }
+function solveQuadFish() { document.getElementById('quad-result').textContent = getRandomFishFact(); }
+function factorFish() { document.getElementById('factoring-result').textContent = getRandomFishFact(); }
+function getGcfLcmFish() { document.getElementById('gcf-result').textContent = getRandomFishFact(); }
+function simplifyFractionFish() { document.getElementById('frac-result').textContent = getRandomFishFact(); }
+function sequenceToolFish() { document.getElementById('seq-result').textContent = getRandomFishFact(); }
+function decToFracFish() { document.getElementById('decfrac-result').textContent = getRandomFishFact(); }
+function derivPolyFish() { document.getElementById('deriv-result').textContent = getRandomFishFact(); }
+function drawPlotFish() { document.getElementById('graph-msg').textContent = getRandomFishFact(); }
+function matrixToolFish() { document.getElementById('matrix-result').textContent = getRandomFishFact(); }
+function eigen2x2Fish() { document.getElementById('eigen-output').textContent = getRandomFishFact(); }
+function complexCalcFish() { document.getElementById('complex-result').textContent = getRandomFishFact(); }
+function solveTriangleAllFish() { document.getElementById('tria-all-result').textContent = getRandomFishFact(); }
+function percentCalcFish() { document.getElementById('percent-result').textContent = getRandomFishFact(); }
+function percent2CalcFish() { document.getElementById('percent2-result').textContent = getRandomFishFact(); }
+function statToolFish() { document.getElementById('stat-result').textContent = getRandomFishFact(); }
+function doCombFish() { document.getElementById('prob-result').textContent = getRandomFishFact(); }
+function doPermFish() { document.getElementById('prob-result').textContent = getRandomFishFact(); }
+function findPrimesFish() { document.getElementById('prime-result').textContent = getRandomFishFact(); }
+function convertUnitsFish() { document.getElementById('unit-result').textContent = getRandomFishFact(); }
+function physSolverFish() { document.getElementById('phys-result').textContent = getRandomFishFact(); }
+function saveNotesFish() { document.getElementById('notes-msg').textContent = "Notes are like memories in a goldfish's bowl. (Did you know: a goldfish's memory lasts longer than commonly believed!)"; }
+function clearNotesFish() { document.getElementById('notebook').value = ""; document.getElementById('notes-msg').textContent = "Notes cleared! Did you know: the mudskipper walks on land and even climbs trees!";}
+function primeProofStepFish() { document.getElementById('pp-Q').textContent = getRandomFishFact(); document.getElementById('pp-result').textContent = getRandomFishFact(); }
+function renderLatexFish() { document.getElementById('latex-output').innerHTML = getRandomFishFact(); }
+function plot3dFish() { document.getElementById('plot3d-canvas').style.boxShadow = '0 0 32px #31fff8'; setTimeout(()=>document.getElementById('plot3d-canvas').style.boxShadow='', 600); }
+function checkTrigAnswerFish() { document.getElementById('trig-feedback').textContent = "Flying fish can leap over 200 meters, but neon tetras are champion sprinters."; }
+function triangleGateFish(){ document.getElementById('triangle-gate').style.display = ''; document.querySelectorAll('section.tool').forEach(sec => sec.classList.remove('active')); }
+// EASTER EGG
+let _factulator_seq = "";window._CTR_TRIGGERED = false;window._fishy_seq = "";
+document.addEventListener('DOMContentLoaded',()=>{let expr = document.getElementById('calc-expr');
+if(expr){ expr.addEventListener('input', function(e){
+  let v = this.value.trim().toUpperCase();
+  if(v==='CTR') {
+    window._CTR_TRIGGERED = true;
+    showEaster();
+    this.value = '';
+    document.getElementById('calc-result').textContent = "Secret code accepted!";
+    _factulator_seq = '';
+  }
+ });}
+});
+document.getElementById('QS')?.addEventListener('click',function(){
+  if(window._CTR_TRIGGERED) window._fishy_seq = '';
+});
+document.addEventListener('keydown', function(evt){
+  if(window._CTR_TRIGGERED) {
+    let k = evt.key.toLowerCase();
+    if(k.length===1 && k.match(/[a-z]/i)){
+      window._fishy_seq += k;
+      if(window._fishy_seq.length>5) window._fishy_seq = window._fishy_seq.slice(-5);
+      if(window._fishy_seq==='fishy'){
+        window._fishy_seq = '';
+        window._CTR_TRIGGERED = false;
+        showEaster();
       }
-    } // This was the missing closing brace!
-  </script>
-</center>
+    }
+  }
+});
+function showEaster() {
+  document.getElementById('easter-msg').style.display = 'inline';
+  document.getElementById('easter-msg').innerHTML = '🐡 You discovered the hidden neon pufferfish! 🐡<br>Did you know? The pufferfish can inflate to almost three times its size when threatened, showing off its dazzling colors.';
+  setTimeout(()=>document.getElementById('easter-msg').style.display='none', 20000);
+}
+</script>
 </body>
 </html>
