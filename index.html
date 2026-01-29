@@ -44,6 +44,63 @@ a:hover{ color:var(--neon-yellow); }
 ::-webkit-scrollbar { width: 10px; background: #131619;}
 ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 6px; }
 code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-family:monospace; color:var(--neon-cyan);}
+
+/* Guard NPC Face & Eyes */
+#scale-simplifier-btn.npc-guard {
+  position: relative;
+  width: 170px;
+  height: 60px;
+  font-size: 1em;
+  background: #ffe4b5;
+  border-radius: 40px;
+  border: 2px solid #654321;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s all;
+  color: #222;
+}
+.eye {
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 18px;
+  box-shadow: 0 0 0 2px #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.eye.left  { left: 38px; }
+.eye.right { right: 38px; }
+.pupil {
+  width: 8px;
+  height: 8px;
+  background: #222;
+  border-radius: 50%;
+  position: relative;
+  left: 3.5px;
+  top: 3px;
+}
+#npc-dialogue {
+  background: #fffde2;
+  border: 2px solid #654321;
+  border-radius: 10px;
+  width: 300px;
+  padding: 18px 14px 10px 14px;
+  font-family: 'Courier New', Courier, monospace;
+}
+#npc-dialogue button {
+  margin-top: 14px;
+  padding: 7px 18px;
+  background: #88a;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1em;
+  cursor: pointer;
+}
   </style>
 </head>
 <body>
@@ -65,7 +122,90 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
       <button class="section-link" data-section="quad-section">Gillactic Solver</button>
       <button class="section-link" data-section="factoring-section">Species Sorter</button>
       <button class="section-link" data-section="gcf-section">Greatest Carp/Fish Match</button>
-      <button class="section-link" data-section="fraction-section">Scale Simplifier</button>
+      <button class="section-link" data-section="fraction-section" id="scale-simplifier-btn">Scale Simplifier</button>
+<div id="npc-dialogue" style="display:none; margin-top: 12px;"></div>
+      <script>
+// Persistent NPC memory for session
+const npcMemory = {
+  greeted: false,
+  challengePassed: false,
+  seenResponses: new Set()
+};
+const npcDialogues = [
+  "Halt! Only true scale simplifiers can pass. Who are you?",
+  "Wait! I recall you... What's your business here, again?",
+  "No entry without the secret word! ...Or maybe just prove you're friendly.",
+  "Such persistence! Why do you seek entry?",
+  "You again? You must be determined. One last test...",
+  "Very well, you may pass. Remember: scales come in all sizes."
+];
+let dialogueCounter = 0;
+
+function getUniqueDialogue() {
+  while (dialogueCounter < npcDialogues.length && npcMemory.seenResponses.has(dialogueCounter)) {
+    dialogueCounter++;
+  }
+  if (dialogueCounter >= npcDialogues.length) dialogueCounter = 0;
+  npcMemory.seenResponses.add(dialogueCounter);
+  return npcDialogues[dialogueCounter++];
+}
+
+document.getElementById('scale-simplifier-btn').addEventListener('click', function buttonHandler() {
+  const btn = this;
+  if (btn.classList.contains('npc-guard')) return; // Already transformed
+
+  // Transform the button into the NPC
+  btn.textContent = '';
+  btn.classList.add('npc-guard');
+
+  // Add eyes only if not already present
+  if (!btn.querySelector('.eye')) {
+    let leftEye = document.createElement('div');
+    leftEye.className = 'eye left';
+    let leftPupil = document.createElement('div');
+    leftPupil.className = 'pupil';
+    leftEye.appendChild(leftPupil);
+    let rightEye = document.createElement('div');
+    rightEye.className = 'eye right';
+    let rightPupil = document.createElement('div');
+    rightPupil.className = 'pupil';
+    rightEye.appendChild(rightPupil);
+
+    btn.appendChild(leftEye);
+    btn.appendChild(rightEye);
+  }
+
+  // Show dialogue box
+  const dialogue = document.getElementById('npc-dialogue');
+  dialogue.style.display = '';
+  dialogue.innerHTML = `
+    <div id="npc-text">${getUniqueDialogue()}</div>
+    <button id="npc-reply">Respond</button>
+  `;
+
+  // Disable the main button during NPC interaction
+  btn.disabled = true;
+
+  document.getElementById('npc-reply').onclick = function() {
+    // After 3 unique replies, let the player in
+    if (npcMemory.seenResponses.size > 3 && !npcMemory.challengePassed) {
+      npcMemory.challengePassed = true;
+      dialogue.innerHTML = "The guard narrows its eyes... \"Alright, you’re in!\"";
+      setTimeout(() => {
+        btn.style.display = 'none';
+        dialogue.style.display = 'none';
+        // Optionally: Here you can trigger the scale simplifier opening/unlock instead of hiding
+      }, 1700);
+    } else {
+      dialogue.innerHTML = `
+        <div id="npc-text">${getUniqueDialogue()}</div>
+        <button id="npc-reply">Respond</button>
+      `;
+      document.getElementById('npc-reply').onclick = arguments.callee;
+    }
+  }
+});
+</script>
       <button class="section-link" data-section="seq-section">Pattern Tracker</button>
       <button class="section-link" data-section="decimal-section">Convert: Scales → Fins</button>
     </details>
