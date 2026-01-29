@@ -45,61 +45,68 @@ a:hover{ color:var(--neon-yellow); }
 ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 6px; }
 code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-family:monospace; color:var(--neon-cyan);}
 
-/* Guard NPC Face & Eyes */
-#scale-simplifier-btn.npc-guard {
+/* Keep button size consistent */
+#scale-simplifier-btn, #scale-simplifier-btn.npc-guard {
   position: relative;
   width: 170px;
-  height: 60px;
-  font-size: 1em;
+  height: 58px;
+  font-size: 1.12em;
   background: #ffe4b5;
   border-radius: 40px;
   border: 2px solid #654321;
+  color: #222;
+  overflow: visible;
+  transition: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 0.3s all;
-  color: #222;
 }
-.eye {
-  width: 20px;
-  height: 20px;
+#scale-simplifier-btn .eye {
+  width: 40px;
+  height: 40px;
   background: #fff;
   border-radius: 50%;
   position: absolute;
-  top: 18px;
-  box-shadow: 0 0 0 2px #222;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 10px;
+  z-index: 2;
+  border: 2px solid #222;
+  pointer-events: none;
 }
-.eye.left  { left: 38px; }
-.eye.right { right: 38px; }
-.pupil {
-  width: 8px;
-  height: 8px;
-  background: #222;
+#scale-simplifier-btn .eye.left  { left: 32px; }
+#scale-simplifier-btn .eye.right { right: 32px; }
+#scale-simplifier-btn .pupil {
+  width: 16px;
+  height: 16px;
+  background: #111;
   border-radius: 50%;
-  position: relative;
-  left: 3.5px;
-  top: 3px;
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  transition: top 0.1s, left 0.1s;
 }
+
+/* Black dialog with white text */
 #npc-dialogue {
-  background: #fffde2;
-  border: 2px solid #654321;
+  background: #111;
+  color: #fff;
+  border: 2px solid #ff8000;
   border-radius: 10px;
-  width: 300px;
+  width: 335px;
   padding: 18px 14px 10px 14px;
   font-family: 'Courier New', Courier, monospace;
-}
-#npc-dialogue button {
   margin-top: 14px;
-  padding: 7px 18px;
-  background: #88a;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 1em;
-  cursor: pointer;
+  font-size: 1.07em;
+  min-height: 36px;
+  box-shadow: 0 0 20px #000a;
+  transition: opacity 0.5s;
+}
+
+#npc-dialogue .npc-name {
+  color: #ff9500;
+  font-weight: bold;
+  margin-bottom: 6px;
+  display: block;
+  font-size: 1.14em;
 }
   </style>
 </head>
@@ -122,88 +129,221 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
       <button class="section-link" data-section="quad-section">Gillactic Solver</button>
       <button class="section-link" data-section="factoring-section">Species Sorter</button>
       <button class="section-link" data-section="gcf-section">Greatest Carp/Fish Match</button>
-      <button class="section-link" data-section="fraction-section" id="scale-simplifier-btn">Scale Simplifier</button>
-<div id="npc-dialogue" style="display:none; margin-top: 12px;"></div>
+ <button class="section-link" data-section="fraction-section" id="scale-simplifier-btn">Scale Simplifier</button>
+<div id="npc-dialogue" style="display:none;"></div>
       <script>
-// Persistent NPC memory for session
-const npcMemory = {
-  greeted: false,
-  challengePassed: false,
-  seenResponses: new Set()
-};
-const npcDialogues = [
-  "Halt! Only true scale simplifiers can pass. Who are you?",
-  "Wait! I recall you... What's your business here, again?",
-  "No entry without the secret word! ...Or maybe just prove you're friendly.",
-  "Such persistence! Why do you seek entry?",
-  "You again? You must be determined. One last test...",
-  "Very well, you may pass. Remember: scales come in all sizes."
-];
-let dialogueCounter = 0;
 
-function getUniqueDialogue() {
-  while (dialogueCounter < npcDialogues.length && npcMemory.seenResponses.has(dialogueCounter)) {
-    dialogueCounter++;
+        // --- Dialogue Tree System ---
+
+// Memory persists through one browser session.
+let npcState = JSON.parse(sessionStorage.getItem('scaleNpcState') || '{}');
+if (!npcState.id) npcState = { id: 'root', history: [] };
+
+// Data structure: Complex dialogue tree with NPC memory
+const dialogueTree = {
+  root: {
+    npc: "Halt! Only true scale simplifiers may enter. What do you want?",
+    options: [
+      { text: "I want to simplify!", next: "simplify" },
+      { text: "Just passing through.", next: "pass" },
+      { text: "Who are you?", next: "who" }
+    ]
+  },
+  simplify: {
+    npc: "Wanting is not enough. Can you prove your worth?",
+    options: [
+      { text: "Yes! Give me a test.", next: "test" },
+      { text: "I just want in.", next: "justWant" },
+      { text: "Can I bribe you?", next: "bribe" }
+    ]
+  },
+  pass: {
+    npc: "There's nothing simple about passing through here. Try again.",
+    options: [
+      { text: "Fine, I want to simplify.", next: "simplify" },
+      { text: "Who are you?", next: "who" }
+    ]
+  },
+  who: {
+    npc: "I am the Scale Guardian, keeper of fractional wonders and occasional puns. What's your name?",
+    options: [
+      { text: "I'm the chosen one.", next: "chosenOne" },
+      { text: "Just a traveler.", next: "traveler" }
+    ]
+  },
+  chosenOne: {
+    npc: "Many claim that title! Prove it.",
+    options: [
+      { text: "Uh... Look behind you!", next: "distraction" },
+      { text: "Let me simplify.", next: "simplify" }
+    ]
+  },
+  traveler: {
+    npc: "Travelers are always welcome... after a little challenge!",
+    options: [
+      { text: "Okay, I'm ready!", next: "test" },
+      { text: "No thanks.", next: "pass" }
+    ]
+  },
+  distraction: {
+    npc: "*The NPC doesn't look.* Oldest trick in the book. Try something else.",
+    options: [
+      { text: "I'm serious!", next: "test" },
+      { text: "OK, you got me.", next: "simplify" }
+    ]
+  },
+  justWant: {
+    npc: "Desire alone opens no doors. The test awaits.",
+    options: [
+      { text: "Fine, test me.", next: "test" },
+      { text: "That's unfair.", next: "unfair" }
+    ]
+  },
+  unfair: {
+    npc: "Life is unfair, but dialogue trees are inventive! Ready for your test?",
+    options: [
+      { text: "Ready.", next: "test" },
+      { text: "Never!", next: "never" }
+    ]
+  },
+  never: {
+    npc: "Suit yourself. You'll have to click again if you change your mind.",
+    options: []
+  },
+  test: {
+    npc: "Here's your test: What is half of a half?",
+    options: [
+      { text: "A quarter!", next: "rightAnswer" },
+      { text: "A half!", next: "wrongAnswer" },
+      { text: "Pi?", next: "wrongAnswer2" }
+    ]
+  },
+  rightAnswer: {
+    npc: "Impressive! You may enter. Remember, not all fractions are so friendly next time.",
+    options: [],
+    grantAccess: true
+  },
+  wrongAnswer: {
+    npc: "That would make too much sense. Try again.",
+    options: [
+      { text: "A quarter!", next: "rightAnswer" },
+      { text: "A half!", next: "wrongAnswerRepeat" }
+    ]
+  },
+  wrongAnswer2: {
+    npc: "I detest irrational numbers. Try again.",
+    options: [
+      { text: "A quarter!", next: "rightAnswer" }
+    ]
+  },
+  wrongAnswerRepeat: {
+    npc: "Still not right, but points for stubbornness.",
+    options: [
+      { text: "A quarter!", next: "rightAnswer" }
+    ]
+  },
+  bribe: {
+    npc: "Bribing a guard? How original! ...What are you offering?",
+    options: [
+      { text: "A cookie.", next: "cookie" },
+      { text: "A compliment.", next: "compliment" }
+    ]
+  },
+  cookie: {
+    npc: "Chocolate chip or raisin?",
+    options: [
+      { text: "Chocolate chip!", next: "rightAnswer" },
+      { text: "Raisin.", next: "raisin" }
+    ]
+  },
+  raisin: {
+    npc: "Begone from this place! (Try again with better taste.)",
+    options: [],
+    restart: true
+  },
+  compliment: {
+    npc: "A kind word is worth more than gold. Entry granted!",
+    options: [],
+    grantAccess: true
   }
-  if (dialogueCounter >= npcDialogues.length) dialogueCounter = 0;
-  npcMemory.seenResponses.add(dialogueCounter);
-  return npcDialogues[dialogueCounter++];
+};
+
+// --- UI Injection & Logic ---
+function renderDialogue() {
+  const node = dialogueTree[npcState.id];
+  if (!node) return;
+  // Memory: Show new NPC lines, no repeats until restart
+  const dialogue = document.getElementById('npc-dialogue');
+  dialogue.style.display = '';
+  dialogue.innerHTML = `<div class="npc-speech">${node.npc}</div>`;
+  if (node.options && node.options.length > 0) {
+    // Show player options as buttons
+    dialogue.innerHTML += '<div class="npc-options"></div>';
+    const opts = dialogue.querySelector('.npc-options');
+    node.options.forEach((opt, idx) => {
+      const b = document.createElement('button');
+      b.textContent = opt.text;
+      b.onclick = () => {
+        npcState.history.push({ id: npcState.id, choice: idx });
+        npcState.id = opt.next;
+        sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
+        renderDialogue();
+      };
+      opts.appendChild(b);
+    });
+  }
+  // If node grants access, hide button and dialogue after a pause
+  if (node.grantAccess) {
+    setTimeout(() => {
+      document.getElementById('scale-simplifier-btn').style.display = 'none';
+      dialogue.innerHTML = `<div class="npc-speech">The guardian nods. A path opens...</div>`;
+      setTimeout(() => {
+        dialogue.style.display = 'none';
+        // Place your unlock logic here
+      }, 2000);
+    }, 1800);
+  }
+  // If node restarts, clear memory after a pause
+  if (node.restart) {
+    setTimeout(() => {
+      npcState = { id: 'root', history: [] };
+      sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
+      renderDialogue();
+    }, 1800);
+  }
 }
 
-document.getElementById('scale-simplifier-btn').addEventListener('click', function buttonHandler() {
+// Add eyes to button and setup dialogue on click
+document.getElementById('scale-simplifier-btn').addEventListener('click', function () {
   const btn = this;
-  if (btn.classList.contains('npc-guard')) return; // Already transformed
-
-  // Transform the button into the NPC
-  btn.textContent = '';
-  btn.classList.add('npc-guard');
-
-  // Add eyes only if not already present
   if (!btn.querySelector('.eye')) {
     let leftEye = document.createElement('div');
     leftEye.className = 'eye left';
-    let leftPupil = document.createElement('div');
-    leftPupil.className = 'pupil';
-    leftEye.appendChild(leftPupil);
+    leftEye.innerHTML = '<div class="pupil"></div>';
     let rightEye = document.createElement('div');
     rightEye.className = 'eye right';
-    let rightPupil = document.createElement('div');
-    rightPupil.className = 'pupil';
-    rightEye.appendChild(rightPupil);
-
+    rightEye.innerHTML = '<div class="pupil"></div>';
     btn.appendChild(leftEye);
     btn.appendChild(rightEye);
-  }
-
-  // Show dialogue box
-  const dialogue = document.getElementById('npc-dialogue');
-  dialogue.style.display = '';
-  dialogue.innerHTML = `
-    <div id="npc-text">${getUniqueDialogue()}</div>
-    <button id="npc-reply">Respond</button>
-  `;
-
-  // Disable the main button during NPC interaction
-  btn.disabled = true;
-
-  document.getElementById('npc-reply').onclick = function() {
-    // After 3 unique replies, let the player in
-    if (npcMemory.seenResponses.size > 3 && !npcMemory.challengePassed) {
-      npcMemory.challengePassed = true;
-      dialogue.innerHTML = "The guard narrows its eyes... \"Alright, you’re in!\"";
-      setTimeout(() => {
-        btn.style.display = 'none';
-        dialogue.style.display = 'none';
-        // Optionally: Here you can trigger the scale simplifier opening/unlock instead of hiding
-      }, 1700);
-    } else {
-      dialogue.innerHTML = `
-        <div id="npc-text">${getUniqueDialogue()}</div>
-        <button id="npc-reply">Respond</button>
-      `;
-      document.getElementById('npc-reply').onclick = arguments.callee;
+    // Animate pupils DougDoug style
+    function animateEyes(evt) {
+      [leftEye, rightEye].forEach((eye) => {
+        const pupil = eye.querySelector('.pupil');
+        const rect = eye.getBoundingClientRect();
+        let x = evt.clientX - (rect.left + rect.width / 2);
+        let y = evt.clientY - (rect.top + rect.height / 2);
+        const maxOffset = 6;
+        const dist = Math.sqrt(x*x + y*y);
+        if (dist > maxOffset) {
+          x = (x / dist) * maxOffset;
+          y = (y / dist) * maxOffset;
+        }
+        pupil.style.transform = `translate(${x}px,${y}px)`;
+      });
     }
+    window.addEventListener('mousemove', animateEyes);
   }
+  renderDialogue();
 });
 </script>
       <button class="section-link" data-section="seq-section">Pattern Tracker</button>
