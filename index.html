@@ -44,6 +44,92 @@ a:hover{ color:var(--neon-yellow); }
 ::-webkit-scrollbar { width: 10px; background: #131619;}
 ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 6px; }
 code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-family:monospace; color:var(--neon-cyan);}
+    .pixel-eyes-btn {
+  position:relative;
+  font-family: 'Press Start 2P', monospace, 'Orbitron', 'Arial', sans-serif;
+  font-size: 1.0rem;
+  letter-spacing:1px;
+  background: #181e22;
+  border: 2.5px solid var(--neon-yellow);
+  color: var(--neon-cyan);
+  padding: 15px 30px;
+  border-radius: 13px;
+  box-shadow: 0 0 10px var(--neon-pink) inset;
+}
+
+.pepper-face {
+  position: absolute;
+  left: 15px;
+  top: 11px;
+  width: 34px;
+  height: 20px;
+  pointer-events: none;
+  display: flex;
+  gap: 7px;
+}
+.eye {
+  background: #fff;
+  border: 2px solid #444;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 0 4px #0ff7;
+  display:inline-block;
+  animation: blink 2.4s infinite steps(1);
+}
+.eye::after{
+  content:'';
+  position:absolute;
+  background: #38a9ff;
+  border-radius:50%;
+  width:5px; height:5px;
+  left:4px; top:5px;
+}
+
+@keyframes blink {
+  0%, 96% { height: 13px }
+  98%, 100% { height: 2px }
+}
+
+/* Pixel font suggestion */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    .npc-dialogue-box {
+  background:#1c1b23;
+  border: 3px solid var(--neon-yellow);
+  border-radius: 16px;
+  box-shadow: 0 0 16px var(--neon-cyan);
+  padding: 33px 26px;
+  min-width:320px; max-width:500px;
+  color:var(--neon-yellow);
+  font-family:'Press Start 2P', monospace;
+  font-size: 1rem;
+  position:relative;
+}
+.pixel-text {
+  font-family:'Press Start 2P', monospace !important;
+  font-size: 1rem;
+  white-space:pre-wrap;
+  min-height: 48px;
+  margin-bottom: 20px;
+}
+#npc-choices button {
+  background: var(--neon-blue);
+  color: var(--text-white);
+  border: none;
+  border-radius: 6px;
+  font-family:'Press Start 2P', monospace;
+  font-size:0.85rem;
+  margin: 0 12px 10px 0;
+  padding: 7px 16px;
+  cursor:pointer;
+  transition: background 0.13s;
+}
+#npc-choices button:hover {background:var(--neon-yellow);color:#111;}
+#npc-modal {
+  position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;
+  background:rgba(13,20,45,0.80);
+  display:flex;align-items:center;justify-content:center;
+}
   </style>
 </head>
 <body>
@@ -65,7 +151,10 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
       <button class="section-link" data-section="quad-section">Gillactic Solver</button>
       <button class="section-link" data-section="factoring-section">Species Sorter</button>
       <button class="section-link" data-section="gcf-section">Greatest Carp/Fish Match</button>
-      <button class="section-link" data-section="fraction-section">Scale Simplifier</button>
+      <button class="section-link" data-section="fraction-section"><span class="pepper-face">
+    <span class="eye left-eye"></span>
+    <span class="eye right-eye"></span>
+  </span>Scale Simplifier</button>
       <button class="section-link" data-section="seq-section">Pattern Tracker</button>
       <button class="section-link" data-section="decimal-section">Convert: Scales → Fins</button>
     </details>
@@ -566,6 +655,12 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
     </main>
   </div>
 </div>
+    <div id="npc-modal" style="display:none;">
+  <div class="npc-dialogue-box">
+    <div id="npc-dialog" class="pixel-text"></div>
+    <div id="npc-choices"></div>
+  </div>
+</div>
 <footer style="text-align:center;padding:16px;color:#ffe436;">
   &copy; 2026 A Fish 
   <span id="easter-msg" style="display:none;color:#da39e0; margin-left:7px"></span>
@@ -911,6 +1006,77 @@ function showEaster() {
   document.getElementById('easter-msg').innerHTML = '🐡 You discovered the hidden neon pufferfish! 🐡<br>Did you know? The pufferfish can inflate to almost three times its size when threatened, showing off its dazzling colors.';
   setTimeout(()=>document.getElementById('easter-msg').style.display='none', 20000);
 }
+  const npcMemory = JSON.parse(localStorage.getItem('npcMemory') || '{}');
+
+// Randomized dialog set, growing each visit
+const DIALOGUE_SETS = [
+  [
+    {npc:"Hey. You look familiar. Aren't you the one who rage-quit last time?", choices:[
+      "I've matured.", "Let me in or I'll ask again.", "Rematch. Fish speedrun."
+    ]},
+    {npc:"Matured? Last time you unplugged the site.", choices:["I'm cooler now.","Open up, please."]},
+    {npc:"Fine. Don't break anything this time.", choices:["[Enter]"]}
+  ],
+  [
+    // Different opening, different flavor
+    {npc:"Oh look. It's you. Remember your high score? Neither do I.", choices:[
+      "Fish memory is short.","Gimme another shot.","Who's counting?"
+    ]},
+    {npc:"I am... and it wasn't pretty.", choices:["Let's fix that.","I believe in myself now."]},
+    {npc:"That's the spirit. Try not to flop.", choices:["[Swim in]"]}
+  ],
+  // Add more dialog paths as you like
+];
+
+function getNextDialogueSet() {
+  let visit = parseInt(npcMemory.visits||0,10);
+  npcMemory.visits = visit+1;
+  localStorage.setItem('npcMemory', JSON.stringify(npcMemory));
+  // Cycle through sets or randomize after you exhaust
+  return DIALOGUE_SETS[visit % DIALOGUE_SETS.length];
+}
+  function showDialog(dialogSet) {
+  let step = 0;
+  const modal = document.getElementById('npc-modal');
+  const dialogDiv = document.getElementById('npc-dialog');
+  const choicesDiv = document.getElementById('npc-choices');
+
+  function nextStep() {
+    const segment = dialogSet[step];
+    typeOut(segment.npc, dialogDiv).then(()=>{
+      choicesDiv.innerHTML = "";
+      segment.choices.forEach((text, idx)=>{
+        const btn = document.createElement('button');
+        btn.textContent = text;
+        btn.onclick = ()=>{
+          // Remember player's answers if you want:
+          if(!npcMemory.history) npcMemory.history = [];
+          npcMemory.history.push({
+            dialogue: segment.npc,
+            choice: text,
+            visit: npcMemory.visits
+          });
+          localStorage.setItem('npcMemory', JSON.stringify(npcMemory));
+          if(step < dialogSet.length-1){
+            step++;
+            nextStep();
+          } else {
+            modal.style.display = "none";
+            // Start your game here!
+          }
+        }
+        choicesDiv.appendChild(btn);
+      });
+    });
+  }
+
+  modal.style.display = "";
+  nextStep();
+}
+  document.getElementById('gatekeeper-btn').onclick = ()=>{
+  showDialog(getNextDialogueSet());
+};
+
 </script>
 </body>
 </html>
