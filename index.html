@@ -107,13 +107,7 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
   font-size: 1.14em;
 }
     .npc-eyes {
-  position: absolute;
-  width: 54px;
-  height: 30px;
-  left: 68px; /* adjust for your button! */
-  top: 11px;
-  pointer-events: none;
-  display: flex; flex-direction: row; gap: 8px;
+  z-index:2;
 }
 .npc-eye {
   width: 24px; height: 24px; background: #fff;
@@ -122,51 +116,57 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
 .npc-eye .npc-pupil {
   width: 9px; height: 9px; background: #222;
   border-radius: 50%; position: absolute; left: 7px; top: 8px;
-  transition: transform .1s cubic-bezier(.6,.19,.41,.98); box-shadow: 0 1px 1px #0005;
+  transition: transform .10s cubic-bezier(.6,.19,.41,.98);
+  box-shadow: 0 1px 1px #0005;
 }
 .npc-eye .npc-glint {
   width:5px; height:3px; background: #fff6;
   position: absolute; left: 13px; top: 4px;
   border-radius: 3px 4px 4px 3px;
 }
-#npc-overlay {
-  position: fixed; left:0;top:0;right:0;bottom:0; z-index:9999;
-  background: rgba(0,0,0,0.36); display: flex; align-items: center; justify-content: center;
-  pointer-events: auto; backdrop-filter: blur(2px);
+#npc-bubble {
+  pointer-events: none; /* let buttons inside work but not background */
 }
 .npc-dialogue-bubble {
-  background: #161616;
+  background: #18151c;
   color: #fff;
   border-radius: 18px;
-  min-width: 340px; max-width: 90vw; 
-  padding: 1.6em 2.1em 1.6em 2.1em;
-  font-family: "JetBrains Mono",Monaco,monospace;
-  font-size: 1.15em;
-  border: 3.5px solid #feb842;
+  min-width: 340px; 
+  max-width: 99vw;
   box-shadow: 0 18px 50px #000d;
+  font-family: "JetBrains Mono", Monaco, monospace;
+  font-size: 1.10em;
+  border: 3.5px solid #feb842;
   position: relative;
-  text-align:center;
-  pointer-events:auto;
-  z-index:10000;
+  text-align: center;
+  pointer-events: auto;
+  padding: 1.3em 2em 1.5em 2em;
 }
-.npc-dialogue-bubble:after {
-  content:"";
-  position: absolute; 
-  top:100%; left:50%;
-  width:37px; height:22px;
-  background: #161616;
+.npc-tail {
+  width: 40px;
+  height: 24px;
+  position: absolute;
+  left: 50%;
+  top:100%;
+  background: unset;
+  border: none;
+  transform: translate(-50%, -5px);
+}
+.npc-tail:after {
+  content: "";
+  display: block;
+  width: 37px;
+  height: 22px;
+  background: #18151c;
   border: 3.5px solid #feb842;
   border-top: none;
   border-radius: 0 0 30px 30px;
-  transform: translate(-50%,0);
   box-shadow: 0 4px 22px #0003;
+  position: absolute;
+  left:50%; top:0; transform:translate(-50%,0);
 }
-.npc-name {
-  font-size:1.21em; margin-bottom:7px; color: #ffcf70; font-weight:bold;
-}
-.npc-line {
-  margin-bottom: 20px; color: #ffecc7;
-}
+.npc-name { font-size:1.13em; margin-bottom:7px; color: #ffcf70; font-weight:bold; }
+.npc-line { margin-bottom: 18px; color: #ffecc7; }
 .npc-options button {
   margin: 0.6em 0.7em 0 0;
   background: #ffe4b5;
@@ -183,19 +183,15 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
   background:#fff9e4; border-color:#ffcc44;
 }
 .npc-close {
-  margin-top: 2.3em;
+  margin-top: 1.5em;
   background: #242424;
   color: #fff6c1;
   border: 1.6px solid #ffd67c;
   border-radius: 12px;
   padding: 7px 36px;
-  font-size: 1.14em;
-  cursor: pointer;
+  font-size: 1.08em;
   box-shadow: 0 2px 7px #ffedc711;
   transition:.13s;
-}
-.npc-congrats {
-  margin-top: 1.3em; color:#72fa98; font-size:1.18em; font-weight:600;
 }
   </style>
 </head>
@@ -218,39 +214,271 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
       <button class="section-link" data-section="quad-section">Gillactic Solver</button>
       <button class="section-link" data-section="factoring-section">Species Sorter</button>
       <button class="section-link" data-section="gcf-section">Greatest Carp/Fish Match</button>
- <button class="section-link" data-section="fraction-section" id="scale-simplifier-btn">Scale Simplifier</button>
+ <button class="section-link"  id="scale-simplifier-btn">Scale Simplifier</button>
 <div id="npc-dialogue" style="display:none;"></div>
-      <script>
-// ========== Persistent State ==========
+      <script>// ==============================
+// 1. Persistent User State
+// ==============================
 let npcState = JSON.parse(sessionStorage.getItem('scaleNpcState') || '{}');
-if (!npcState.id) npcState = { id: 'root', history: [], sessionCount: 0, lastVisited: Date.now() };
-npcState.sessionCount = (npcState.sessionCount || 0) + 1;
-npcState.returned = npcState.sessionCount > 1;
+if (!npcState.sessionCount) npcState.sessionCount = 0;
+if (!npcState.completed) npcState.completed = false;
+if (!npcState.lastSessionBubble) npcState.lastSessionBubble = 0;
+// Only count a new "play" if not in a popup restart
+if (!window._npcActiveSession) {
+  npcState.sessionCount += 1; // bump every real reload
+  window._npcActiveSession = true;
+}
 sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
 
-let dialogueOpen = false;
+// Helper for current session
+const isReturn = npcState.sessionCount > 1;
 
-// ========== Eye Overlay (Nice Looks + Animation) ==========
+// ==============================
+// 2. Dialogue Data
+// ==============================
+const dialogueTree = {
+  root: {
+    npc: "Halt! Only true scale simplifiers may enter my domain. State your intent...",
+    options: [
+      { text: "I wish to simplify fractions.", next: "test-intro" },
+      { text: "I'm here for a joke.", next: "joke-1" },
+      { text: "Can I bribe you?", next: "bribe-try" },
+      { text: "Who are you?", next: "who-are-you" },
+      { text: "Let me pass, please.", next: "beg" }
+    ]
+  },
+  'return-root': {
+    npc: "Ah, it's you again! Have you come to try your luck, or are you here for more jokes?",
+    options: [
+      { text: "Hardened puzzles this time!", next: "test-hard-1" },
+      { text: "Tell me an NPC secret.", next: "npc-secret" },
+      { text: "Okay, I'll admit, I missed you.", next: "npc-flattered" },
+      { text: "One more joke, then I must go.", next: "joke-3" }
+    ]
+  },
+  'npc-flattered': {
+    npc: "Flattery will get you everywhere. Are you ready for the challenge?", 
+    options: [
+      { text: "Hit me with math.", next: "test-intro" },
+      { text: "Just open the door!", next: "test-pass" }
+    ]
+  },
+  // ------ Quizzes (Short versions) ------
+  'test-intro': {
+    npc: "First: What is 1/2 + 1/4?",
+    options: [
+      { text: "3/4", next: "test-2" },
+      { text: "2/6", next: "test-wrong-1" }
+    ]
+  },
+  'test-2': {
+    npc: "Nice! Next one: What's 2/4 simplified?",
+    options: [
+      { text: "1/2", next: "test-pass" },
+      { text: "2/8", next: "test-wrong-1" }
+    ]
+  },
+  'test-hard-1': {
+    npc: "Advanced: (3/4) x (2/5) = ?",
+    options: [
+      { text: "3/10", next: "test-hard-2" },
+      { text: "6/9", next: "test-hard-wrong" }
+    ]
+  },
+  'test-hard-2': {
+    npc: "And: What’s the reciprocal of 4/7?",
+    options: [
+      { text: "7/4", next: "test-hard-pass" },
+      { text: "4/7", next: "test-hard-wrong" }
+    ]
+  },
+  'test-hard-pass': {
+    npc: "Impressive! Entry granted for returning heroes.",
+    grantAccess: true
+  },
+  'test-pass': {
+    npc: "You are worthy. Welcome to the scales!",
+    grantAccess: true
+  },
+  'test-hard-wrong': {
+    npc: "Not quite. Try again!",
+    options: [
+      { text: "Retry!", next: "test-hard-1" }
+    ]
+  },
+  'test-wrong-1': {
+    npc: "Incorrect. Want to try again?",
+    options: [
+      { text: "Yes!", next: "test-intro" },
+      { text: "No, joke please.", next: "joke-1" }
+    ]
+  },
+  // -- Jokes / Bribes / Misc
+  'joke-1': {
+    npc: "What do you call a fraction with no denominator? Trouble!",
+    options: [
+      { text: "Groan.", next: isReturn ? "return-root" : "root" }
+    ]
+  },
+  'joke-3': {
+    npc: "Why did the math book look so sad? Because it had too many problems.",
+    options: [
+      { text: "Heard that one!", next: isReturn ? "return-root" : "root" }
+    ]
+  },
+  'bribe-try': {
+    npc: "Hmm. What are you offering?",
+    options: [
+      { text: "A cookie.", next: "bribe-cookie" },
+      { text: "A compliment.", next: "bribe-compliment" }
+    ]
+  },
+  'bribe-cookie': {
+    npc: "What kind?",
+    options: [
+      { text: "Chocolate chip", next: "bribe-win" },
+      { text: "Raisin", next: "bribe-fail" }
+    ]
+  },
+  'bribe-win': {
+    npc: "You've bribed the best way. Entry granted.",
+    grantAccess: true
+  },
+  'bribe-fail': {
+    npc: "The only thing worse than wrong fractions is a raisin cookie! Begone!",
+    options: [
+      { text: "Fine!", next: isReturn ? "return-root" : "root" }
+    ]
+  },
+  'bribe-compliment': {
+    npc: "Oh, you charmer! Door's open.",
+    grantAccess: true
+  },
+  'who-are-you': {
+    npc: "I am Scale Guardian! My hobbies: blocking intruders, multiplying primes, telling jokes.",
+    options: [
+      { text: "Joke, please.", next: "joke-1" },
+      { text: "Math, please.", next: "test-intro" }
+    ]
+  },
+  'npc-secret': {
+    npc: "Sometimes I skip numbers in testing. Please just don't tell anyone.",
+    options: [
+      { text: "It’s safe with me.", next: "return-root" }
+    ]
+  },
+  'beg': {
+    npc: "Nice try! This is a math zone.",
+    options: [
+      { text: "Math it is.", next: "test-intro" },
+      { text: "Fine, joke.", next: "joke-1" }
+    ]
+  },
+};
+
+// ==============================
+// 3. Dialogue Logic
+// ==============================
+function showDialogueBubble(dialogueNode, btn) {
+  dialogueOpen = true;
+  npcState.canClick = false;
+  sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
+  let bubble = document.getElementById('npc-bubble');
+  if (!bubble) {
+    bubble = document.createElement('div');
+    bubble.id = 'npc-bubble';
+    document.body.appendChild(bubble);
+  }
+  const bcr = btn.getBoundingClientRect();
+  bubble.style.position = 'absolute';
+  bubble.style.zIndex = 9999;
+  bubble.style.left = (window.scrollX + bcr.left + bcr.width/2) + 'px';
+  bubble.style.top  = (window.scrollY + bcr.top - 24) + 'px'; // above the button
+  bubble.style.transform = 'translate(-50%, -100%)'; // center over button
+
+  // Text bubble arrow
+  bubble.innerHTML = `
+    <div class="npc-dialogue-bubble">
+      <div class="npc-name">Scale Guardian</div>
+      <div class="npc-line">${dialogueNode.npc}</div>
+      <div class="npc-options"></div>
+      <div class="npc-tail"></div>
+    </div>
+  `;
+  const optArea = bubble.querySelector('.npc-options');
+  if (dialogueNode.options && dialogueNode.options.length > 0) {
+    dialogueNode.options.forEach((opt, i) => {
+      const b = document.createElement('button');
+      b.textContent = opt.text;
+      b.onclick = () => {
+        npcState.history = npcState.history || [];
+        npcState.history.push({ id: npcState.id, choice: i });
+        npcState.id = opt.next;
+        sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
+        renderDialogue(btn);
+      };
+      optArea.appendChild(b);
+    });
+  }
+  if (dialogueNode.grantAccess) {
+    setTimeout(() => {
+      npcState.completed = true;
+      sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
+      // Remove bubble+eyes, re-enable button, and "play" the section link!
+      bubble.remove(); dialogueOpen = false;
+      const sbtn = document.querySelector(`[data-section="fraction-section"]`);
+      if (sbtn) {
+        sbtn.classList.remove('npc-guardian'); // eyes go away
+        sbtn.disabled = false;
+        // Trigger its normal click handler (simulate click)
+        sbtn.click();
+      }
+    }, 1800);
+  }
+  if ((!dialogueNode.options || dialogueNode.options.length === 0) && !dialogueNode.grantAccess) {
+    // Add a close so they can restart
+    const closeBtn = document.createElement('button');
+    closeBtn.className = "npc-close";
+    closeBtn.textContent = "Restart";
+    closeBtn.onclick = () => {
+      bubble.remove();
+      dialogueOpen = false;
+      // reset root, stay in return tree if it’s a return
+      npcState.id = isReturn ? 'return-root' : 'root';
+      sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
+      btn.disabled = false;
+    };
+    optArea.appendChild(closeBtn);
+  }
+}
+
+// =========== Eyes Overlay
 function spawnEyes(btn) {
   if (btn.querySelector('.npc-eyes')) return;
-
   const eyes = document.createElement('div');
   eyes.className = 'npc-eyes';
   eyes.innerHTML = `
-    <span class="npc-eye left"><span class="npc-pupil"></span><span class="npc-glint"></span></span>
-    <span class="npc-eye right"><span class="npc-pupil"></span><span class="npc-glint"></span></span>
+    <span class="npc-eye"><span class="npc-pupil"></span><span class="npc-glint"></span></span>
+    <span class="npc-eye"><span class="npc-pupil"></span><span class="npc-glint"></span></span>
   `;
+  btn.style.position = 'relative'; // required for centering
   btn.appendChild(eyes);
+  // Absolute center
+  eyes.style.position = "absolute";
+  eyes.style.left = "50%";
+  eyes.style.top = "50%";
+  eyes.style.transform = "translate(-50%, -50%)";
+  eyes.style.pointerEvents = "none";
+  eyes.style.display = "flex";
+  eyes.style.gap = "9px";
   // Animate
   function movePupils(e) {
-    const rectL = eyes.children[0].getBoundingClientRect();
-    const rectR = eyes.children[1].getBoundingClientRect();
-    [[rectL, 0], [rectR, 1]].forEach(([rect, eyeIndex]) => {
-      const pupil = eyes.children[eyeIndex].querySelector('.npc-pupil');
+    [...eyes.children].forEach(eye => {
+      const pupil = eye.querySelector('.npc-pupil');
+      const rect = eye.getBoundingClientRect();
       let cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
       let dx = e.clientX - cx, dy = e.clientY - cy;
-      const maxD = 8;
-      const dist = Math.sqrt(dx*dx+dy*dy);
+      const maxD = 8, dist = Math.sqrt(dx*dx+dy*dy);
       if (dist > maxD && dist !== 0) {
         dx = (dx/dist)*maxD; dy = (dy/dist)*maxD;
       }
@@ -260,337 +488,24 @@ function spawnEyes(btn) {
   window.addEventListener('mousemove', movePupils);
 }
 
-// ========== Dialogue System ==========
-
-function showDialogueBubble(dialogueNode) {
-  dialogueOpen = true;
-  npcState.canClick = false;
-  sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
-
-  let overlay = document.getElementById('npc-overlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'npc-overlay';
-    overlay.innerHTML = `<div class="npc-dialogue-bubble"></div>`;
-    document.body.appendChild(overlay);
-  }
-  overlay.style.display = '';
-  const bubble = overlay.querySelector('.npc-dialogue-bubble');
-
-  // NPC lines & player choices
-  let html = `<div class="npc-name">Scale Guardian</div>`;
-  html += `<div class="npc-line">${dialogueNode.npc}</div>`;
-  if (dialogueNode.options && dialogueNode.options.length > 0) {
-    html += `<div class="npc-options">${dialogueNode.options.map((opt, i) =>
-      `<button data-index="${i}">${opt.text}</button>`
-    ).join('')}</div>`;
-  } else if (dialogueNode.grantAccess) {
-    html += `<div class="npc-congrats">A hidden door opens. You may enter.</div>`;
-  }
-  if (!dialogueNode.options || dialogueNode.options.length === 0) {
-    html += `<button class="npc-close">Close</button>`;
-  }
-  bubble.innerHTML = html;
-
-  // Player options logic
-  const allOpt = bubble.querySelectorAll('.npc-options button');
-  if (allOpt.length) {
-    allOpt.forEach(b => b.onclick = e => {
-      const idx = +b.getAttribute('data-index');
-      npcState.history.push({ id: npcState.id, choice: idx });
-      npcState.id = dialogueNode.options[idx].next;
-      sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
-      renderDialogue();
-    });
-  }
-  // Grant
-  if (dialogueNode.grantAccess) {
-    setTimeout(() => {
-      document.getElementById('scale-simplifier-btn').style.display = 'none';
-      overlay.style.display = 'none';
-      dialogueOpen = false;
-    }, 2200);
-  }
-  // Close (dead-ends, jokes, etc)
-  const closeBtn = bubble.querySelector(".npc-close");
-  if (closeBtn) {
-    closeBtn.onclick = () => {
-      overlay.style.display = 'none';
-      dialogueOpen = false;
-      npcState = { id: npcState.returned ? 'return-root' : 'root', history: [], sessionCount: npcState.sessionCount, lastVisited: Date.now(), returned: true };
-      sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
-      document.getElementById('scale-simplifier-btn').disabled = false;
-    };
-  }
-  overlay.tabIndex = 0;
-  overlay.focus();
+function renderDialogue(btn) {
+  const d = dialogueTree[npcState.id || (isReturn ? 'return-root' : 'root')];
+  showDialogueBubble(d, btn);
 }
 
-// ========== MASSIVE DIALOGUE TREE ==========
-
-const dialogueTree = {
-  root: {
-    npc: "Halt! Only true scale simplifiers may enter my domain. State your intent...",
-    options: [
-      { text: "I wish to simplify fractions.", next: "test-intro" },
-      { text: "I'm here for a joke.", next: "joke-1" },
-      { text: "Can I bribe you?", next: "bribe-try" },
-      { text: "Who are you?", next: "who-are-you" },
-      { text: "Let me pass, please.", next: "beg" },
-      { text: "What's your favorite fraction?", next: "fraction-fav" }
-    ]
-  },
-  'return-root': {
-    npc: "Back already? I recognize you! Will you try a different approach this time?",
-    options: [
-      { text: "Rematch me with harder puzzles.", next: "test-hard-1" },
-      { text: "Tell me a secret.", next: "npc-secret" },
-      { text: "Bribe 2.0: This time with chocolate.", next: "bribe-special2" },
-      { text: "Asking for directions.", next: "directions" },
-      { text: "I want to learn about you.", next: "who-are-you-return" }
-    ]
-  },
-  // ========== TEST CHAIN ==========
-  'test-intro': {
-    npc: "A trial! First: What is 1/2 + 1/4?",
-    options: [
-      { text: "3/4", next: "test-2" },
-      { text: "2/6", next: "test-wrong-1" },
-      { text: "7/8", next: "test-wrong-1" }
-    ]
-  },
-  'test-2': {
-    npc: "Correct. Now: Which is greater – 3/5 or 2/3?",
-    options: [
-      { text: "2/3", next: "test-3" },
-      { text: "3/5", next: "test-wrong-2" }
-    ]
-  },
-  'test-3': {
-    npc: "Impressive. Final: What is .125 as a fraction?",
-    options: [
-      { text: "1/8", next: "test-pass" },
-      { text: "1/2", next: "test-wrong-3" },
-      { text: "1/12", next: "test-wrong-3" }
-    ]
-  },
-  'test-pass': {
-    npc: "You are worthy. Welcome to the secrets of scale simplification!",
-    grantAccess: true
-  },
-  'test-wrong-1': {
-    npc: "That math doesn't add up! Want to try again?",
-    options: [
-      { text: "Okay, let’s repeat!", next: "test-intro" },
-      { text: "No, tell me a joke instead.", next: "joke-1" }
-    ]
-  },
-  'test-wrong-2': {
-    npc: "Nope! Fractions must be respected. Another try?",
-    options: [
-      { text: "Start over.", next: "test-intro" },
-      { text: "No thanks.", next: "root" }
-    ]
-  },
-  'test-wrong-3': {
-    npc: "Dare to multiply again, but not with answers like that.",
-    options: [
-      { text: "One more test.", next: "test-intro" }
-    ]
-  },
-
-  // ========== HARD TEST ==========
-  'test-hard-1': {
-    npc: "Alright! Solve: (3/4) x (2/5) = ?",
-    options: [
-      { text: "3/10", next: "test-hard-2" },
-      { text: "5/8", next: "test-hard-wrong" }
-    ]
-  },
-  'test-hard-2': {
-    npc: "Now: 7/9 + 1/3 = ? (Simplify)",
-    options: [
-      { text: "10/9", next: "test-hard-3" },
-      { text: "8/12", next: "test-hard-wrong" }
-    ]
-  },
-  'test-hard-3': {
-    npc: "Final: What’s the reciprocal of 4/7?",
-    options: [
-      { text: "7/4", next: "test-hard-pass" },
-      { text: "4/7", next: "test-hard-wrong" }
-    ]
-  },
-  'test-hard-pass': {
-    npc: "Genius! You’re cleared for entry, super simplifier.",
-    grantAccess: true
-  },
-  'test-hard-wrong': {
-    npc: "Close, but not enough. Would you like a hint?",
-    options: [
-      { text: "Yes, hint please.", next: "test-hint" },
-      { text: "No, start over.", next: "test-intro" }
-    ]
-  },
-  'test-hint': {
-    npc: "Remember: Always reduce your fractions and watch denominators closely.",
-    options: [
-      { text: "Okay, retry!", next: "test-hard-1" }
-    ]
-  },
-
-  // ========== BRIBES ==========
-  'bribe-try': {
-    npc: "I'm listening. What do you offer?",
-    options: [
-      { text: "A cookie.", next: "bribe-cookie" },
-      { text: "A compliment.", next: "bribe-compliment" },
-      { text: "A rare mathematical meme.", next: "bribe-meme" },
-      { text: "A raisin.", next: "bribe-raisin" }
-    ]
-  },
-  'bribe-cookie': {
-    npc: "What kind of cookie?",
-    options: [
-      { text: "Chocolate chip", next: "bribe-choco" },
-      { text: "Oatmeal", next: "bribe-oatmeal" },
-      { text: "Raisin", next: "bribe-raisin" }
-    ]
-  },
-  'bribe-choco': {
-    npc: "Sweet! Entry granted for excellent taste.",
-    grantAccess: true
-  },
-  'bribe-oatmeal': {
-    npc: "Healthy... but not persuasive. Try again.",
-    options: [
-      { text: "Chocolate chip?", next: "bribe-choco" }
-    ]
-  },
-  'bribe-raisin': {
-    npc: "Raisins?! My only nemesis!",
-    options: [
-      { text: "No, just chocolate chip, I swear.", next: "bribe-choco" },
-      { text: "I'll just try the test instead.", next: "test-intro" }
-    ]
-  },
-  'bribe-compliment': {
-    npc: "Well, thank you! Flattery gets you everywhere.",
-    grantAccess: true
-  },
-  'bribe-meme': {
-    npc: "If it's original, you pass! ...But that's cheating. Try the test.",
-    options: [
-      { text: "Fair enough, give me the test.", next: "test-intro" }
-    ]
-  },
-  'bribe-special2': {
-    npc: "Chocolate bribes are my weakness! But can you answer a fraction trivia before entry?",
-    options: [
-      { text: "I'm ready!", next: "test-hard-1" }
-    ]
-  },
-
-  // ========== JOKES & CHITCHAT ==========
-  'joke-1': {
-    npc: "What did the 0 say to the 8? 'Nice belt!' Ha!",
-    options: [
-      { text: "Groan.", next: "joke-2" },
-      { text: "More jokes!", next: "joke-3" },
-      { text: "Please, let's do math instead.", next: "test-intro" }
-    ]
-  },
-  'joke-2': {
-    npc: "Heard about the fraction who went to therapy? Too many unresolved issues.",
-    options: [
-      { text: "More...", next: "joke-3" },
-      { text: "Enough. Test me!", next: "test-intro" }
-    ]
-  },
-  'joke-3': {
-    npc: "Two parallel lines meet at infinity. Not a joke, just geometry making you laugh.",
-    options: [
-      { text: "Alright, I'll leave you alone.", next: "root" },
-      { text: "Back to the test!", next: "test-intro" }
-    ]
-  },
-
-  // ========== WHO ARE YOU ==========
-  'who-are-you': {
-    npc: "I am the Scale Guardian: watcher of ratios, defender of denominators, master of the numerator dance.",
-    options: [
-      { text: "Show me this dance.", next: "npc-dance" },
-      { text: "Cool, let's do math.", next: "test-intro" },
-      { text: "Any hobbies?", next: "npc-hobby" }
-    ]
-  },
-  'who-are-you-return': {
-    npc: "You really want to know about me? I once won a regional fraction simplification contest.",
-    options: [
-      { text: "Nice! Now test me.", next: "test-hard-1" },
-      { text: "Tell me a secret!", next: "npc-secret" }
-    ]
-  },
-  'npc-secret': {
-    npc: "Sometimes I forget to carry the 1. Don't tell the other guardians.",
-    options: [
-      { text: "Your secret is safe.", next: "root" }
-    ]
-  },
-  'npc-dance': {
-    npc: "*The guardian twirls, juggling denominators* Not bad, right?",
-    options: [
-      { text: "Uhhh...", next: "root" }
-    ]
-  },
-  'npc-hobby': {
-    npc: "I enjoy sudoku, juggling primes, and quantum fractions. Mostly guarding.",
-    options: [
-      { text: "I vibe with that.", next: "test-intro" }
-    ]
-  },
-
-  // ========== MISC ==========
-  'beg': {
-    npc: "Please is nice, but knowledge is better! Want a test, a joke, or to bribe?",
-    options: [
-      { text: "Test.", next: "test-intro" },
-      { text: "Joke.", next: "joke-1" },
-      { text: "Bribe.", next: "bribe-try" }
-    ]
-  },
-  'fraction-fav': {
-    npc: "Hmm... 355/113 comes close to pi, but 1/3 is classic.",
-    options: [
-      { text: "Want to test me?", next: "test-intro" },
-      { text: "That's a great trivia!", next: "root" }
-    ]
-  },
-  //'root' branching and return-root above.
-  // ========== RETURN/EASTER EGGS/DIRECTIONS ==========
-
-  'directions': {
-    npc: "Take three lefts at Reciprocal Road, then hop twice at the irrational roundabout. You'll find your way.",
-    options: [
-      { text: "Okay... but now test me.", next: "test-hard-1" },
-      { text: "Thanks, bye!", next: "return-root" }
-    ]
-  }
-  // You can continue expanding this tree endlessly!
-};
-
-function renderDialogue() {
-  const node = dialogueTree[npcState.id];
-  showDialogueBubble(node);
-}
-
-// ========== BUTTON HOOKUP ==========
-const btn = document.getElementById('scale-simplifier-btn');
-btn.addEventListener('click', function () {
-  if (dialogueOpen) return;
+// ===============================
+// Attach to the button!
+const btn = document.querySelector('[data-section="fraction-section"]');
+btn.addEventListener('click', function (e) {
+  // Only intercept on first activation / when not yet completed
+  if (dialogueOpen || npcState.completed) return;
+  // Stop default behavior (if it's a link)
+  e.preventDefault?.();
   spawnEyes(btn);
   btn.disabled = true;
-  renderDialogue();
+  npcState.id = isReturn ? 'return-root' : 'root';
+  sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
+  renderDialogue(btn);
 });
 </script>
       <button class="section-link" data-section="seq-section">Pattern Tracker</button>
