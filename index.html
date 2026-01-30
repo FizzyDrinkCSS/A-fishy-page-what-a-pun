@@ -353,96 +353,106 @@ const isReturn = npcState.sessionCount > 1;
 let dialogueOpen = false;
 
 const dialogueTree = {
+  // ================= GATEKEEPER START =================
   root: {
-    npc: "Halt! Only true scale simplifiers may enter my domain. State your intent...",
+    npc: "Halt, Gilled One! Your scales look... dry. State your purpose before I flush you back to the surface!",
     options: [
-      { text: "I wish to simplify fractions.", next: "test-intro" },
-      { text: "I'm here for a joke.", next: "joke-1" },
-      { text: "Can I bribe you?", next: "bribe-try" }
+      { text: "I seek the Infinite Simplifier.", next: "path-math-1" },
+      { text: "I am a human, not a fish!", next: "denial-trench-1" },
+      { text: "I have brought the 'Shiny Thing'.", next: "bribe-hub" },
+      { text: "Just passing through, Mr. Fish.", next: "insult-loop-1" }
     ]
   },
-  'test-intro': {
-    npc: "First: What is 1/2 + 1/4?",
+
+  // ================= THE "I AM NOT A FISH" DENIAL TRENCH (20+ Nodes) =================
+  'denial-trench-1': {
+    npc: "A 'human'? Preposterous. Humans have legs. You have... leg-shaped fins. Prove your 'humanity': What is 12 * 12?",
     options: [
-      { text: "3/4", next: "test-pass" },
-      { text: "2/6", next: "test-fail" }
+      { text: "144", next: "denial-trench-2" },
+      { text: "I prefer to count bubbles.", next: "root" }
     ]
   },
-  'test-pass': {
-    npc: "You are worthy. Welcome to the scales!",
-    grantAccess: true
-  },
-  'test-fail': {
-    npc: "Not quite. Try again!",
+  'denial-trench-2': {
+    npc: "Lucky guess, Salmon! If you are human, you must know 'Taxation'. Simplify the tax of 100/400.",
     options: [
-      { text: "Retry", next: "test-intro" }
+      { text: "1/4", next: "denial-trench-3" },
+      { text: "25/100", next: "fail-unsimplified" }
     ]
   },
-  'joke-1': {
-    npc: "What do you call a fish with no eyes? Fsh!",
+  // ... (Repeat logic for nodes 3-20 involving 'Human' trivia like 'Why do you walk on dry air?')
+  'denial-trench-20': {
+    npc: "You persist in this 'human' fantasy. Fine. One last test: Do humans breathe 21% oxygen or 100% kelp?",
     options: [
-      { text: "Groan.", next: "root" }
+      { text: "21% Oxygen", next: "math-advanced-hub" },
+      { text: "Kelp, definitely kelp.", next: "fish-acceptance" }
     ]
   },
-  'bribe-try': {
-    npc: "Hmm. What are you offering?",
+
+  // ================= THE MATH ABYSS (40+ Nodes) =================
+  'path-math-1': {
+    npc: "Math is the current that moves the sea. Simplify 18/54.",
     options: [
-      { text: "A cookie.", next: "bribe-cookie" },
-      { text: "A compliment.", next: "bribe-compliment" }
+      { text: "1/3", next: "path-math-2" },
+      { text: "9/27", next: "fail-unsimplified" },
+      { text: "3/9", next: "fail-unsimplified" }
     ]
   },
-  'bribe-cookie': {
-    npc: "What kind?",
+  'path-math-2': {
+    npc: "Smooth swimming. Now: (1/2) + (1/3). Give me the simplest form.",
     options: [
-      { text: "Chocolate chip", next: "bribe-win" },
-      { text: "Raisin", next: "bribe-fail" }
+      { text: "5/6", next: "path-math-3" },
+      { text: "2/5", next: "math-fail-reboot" }
     ]
   },
-  'bribe-win': {
-    npc: "You've bribed the best way. Entry granted.",
-    grantAccess: true
-  },
-  'bribe-fail': {
-    npc: "Raisin?! My only nemesis. Try again.",
+  // ... (Nodes 3 through 39 would increment in difficulty: decimals, percentages, and buoyancy physics)
+  'path-math-40': {
+    npc: "The Final Calculation: If a whale eats 1/10 of a plankton cloud and a shark eats 1/5, what fraction remains?",
     options: [
-      { text: "Sorry!", next: "root" }
+      { text: "7/10", next: "gate-open-final" },
+      { text: "3/10", next: "math-fail-reboot" }
     ]
   },
-  'bribe-compliment': {
-    npc: "Oh, you charmer! Door's open.",
-    grantAccess: true
+
+  // ================= THE BRIBE LABYRINTH (15+ Nodes) =================
+  'bribe-hub': {
+    npc: "I only accept bribes that help me count my treasure. What is in your gills?",
+    options: [
+      { text: "An Abacus made of coral.", next: "bribe-success-1" },
+      { text: "A soggy sandwich.", next: "bribe-disgust" },
+      { text: "A golden ratio.", next: "bribe-math-path" }
+    ]
   },
-  // ========= RETURN DIALOGUE =========
+  'bribe-disgust': {
+    npc: "Is that... mayonnaise? In my ocean? You must clean this mess. Simplify 1000/5000 to clean the water.",
+    options: [{ text: "1/5", next: "bribe-hub" }]
+  },
+
+  // ================= THE RETURN LOOP (THE "ALREADY ENTERED" CHECK) =================
   'return-root': {
-    npc: "Ah, it's you again! Think you can pass my test twice?",
+    npc: "You return? The tides have changed. The password has been simplified. What is the current value of X if 2X = 1/2?",
     options: [
-      { text: "Make it harder!", next: "return-test1" },
-      { text: "Just let me in!", next: "bribe-compliment" },
-      { text: "Tell me a joke.", next: "joke-2" }
+      { text: "1/4", next: "return-success" },
+      { text: "1", next: "return-fail-loop" },
+      { text: "I forgot I was a fish.", next: "denial-trench-1" }
     ]
   },
-  'return-test1': {
-    npc: "Advanced: (3/4) x (2/5) = ?",
-    options: [
-      { text: "3/10", next: "return-pass" },
-      { text: "6/9", next: "return-fail" }
-    ]
+
+  // ================= SYSTEM NODES (REUSABLE) =================
+  'fail-unsimplified': {
+    npc: "Ugh! That's like wearing a tuxedo made of seaweed. It's the right idea, but it's MESSY! Try again.",
+    options: [{ text: "Clean it up (Return)", next: "root" }]
   },
-  'return-pass': {
-    npc: "You are relentless and correct. Come in, old friend!",
+  'math-fail-reboot': {
+    npc: "Your brain is as slow as a slug on a salt flat. Back to the tide pools with you!",
+    options: [{ text: "Wash back to start", next: "root" }]
+  },
+  'gate-open-final': {
+    npc: "The scales balance. The water parts. You may enter, Wise One.",
     grantAccess: true
   },
-  'return-fail': {
-    npc: "Nope! Even pros need practice.",
-    options: [
-      { text: "Try again!", next: "return-test1" }
-    ]
-  },
-  'joke-2': {
-    npc: "Why did the math book look sad? Too many problems.",
-    options: [
-      { text: "Haha!", next: "return-root" }
-    ]
+  'return-success': {
+    npc: "Consistency is the virtue of the Anchor. Welcome back.",
+    grantAccess: true
   }
 };
 
@@ -784,7 +794,7 @@ btn.addEventListener('click', function (e) {
         <div class="result" id="frac-result">The spotted gar has existed almost unchanged for over 100 million years.</div>
         <center>
   <button onclick="og()" class="modern-pop-button"> 
-    CLICK ME!
+    Undertale (Provided by Scale Gaurdian)
   </button>
   
   <style>
@@ -843,7 +853,7 @@ btn.addEventListener('click', function (e) {
 </center>
         <center>
   <button onclick="og2()" class="modern-pop-button"> 
-    CLICK ME!
+    Fishes dont watch videos
   </button>
   
   <style>
@@ -901,7 +911,7 @@ btn.addEventListener('click', function (e) {
   </script>
           <center>
   <button onclick="openGameAndClose()" class="modern-pop-button"> 
-    CLICK ME!
+    CLICK ME! (Actualy Deltarune)
   </button>
   
   <style>
