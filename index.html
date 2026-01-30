@@ -246,6 +246,74 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
 .bubble-box .npc-options button:hover {
   background:#e2faff; border-color:#3bf0ea;
 }
+    .textbox-bubble {
+  background: #232838;
+  color: #e4eaf4;
+  border-radius: 12px;
+  min-width: 210px;
+  max-width: 350px;
+  box-shadow: 0 1.5px 12px #0008;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 1.08em;
+  border: 2.4px solid #7bf9ea;
+  position: relative;
+  text-align: left;
+  pointer-events: auto;
+  padding: 1em 1.3em 1.25em 1.1em;
+}
+.textbox-bubble .npc-name {
+  font-size:1em;
+  font-weight: bold;
+  color: #35cffb;
+  padding-bottom: 3px;
+}
+.npc-line-textbox {
+  font-size: 1.05em;
+  font-family: inherit;
+  color: #ebf8fb;
+  border-radius: 7px;
+  padding: 0.38em 0.5em;
+  background: #191f2c;
+  border: 1.1px solid #234e6a;
+  box-shadow: 0 1.5px 5px #2337;
+  margin: 0 0 1em 0;
+  min-height: 1.5em;
+}
+.textbox-tail-left {
+  width:25px;
+  height:28px;
+  position: absolute;
+  left: -23px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 9;
+}
+.textbox-tail-left:after {
+  content:"";
+  display:block;
+  width:25px; height:24px;
+  background: #232838;
+  border-radius: 60% 0 0 60%/25% 60% 40% 60%;
+  border-left: 2.2px solid #7bf9ea;
+  box-shadow: -8px 1px 9px -5px #091017;
+  position: absolute; right:0; top:0;
+}
+.bubble-box .npc-options button {
+  margin: 0.4em 0.6em 0 0;
+  background: #fff;
+  color: #294666;
+  border: 1.2px solid #7bf9ea;
+  border-radius: 7px;
+  padding: 7px 16px;
+  font-size: 1em;
+  font-family: inherit;
+  box-shadow: 0 2px 7px #1bfdf850;
+  cursor: pointer;
+  transition:.11s;
+}
+.bubble-box .npc-options button:hover {
+  background:#e2faff; border-color:#3bf0ea;
+}
   </style>
 </head>
 <body>
@@ -488,11 +556,8 @@ btn.addEventListener('click', function (e) {
 }, true); // <--- use {capture:true} if your framework fights you
 
 // ========== End of Script ==========
-        // ... (your previous initializations remain unchanged -- keep all npcState, dialogueTree, spawnEyes, etc)
-
-function showBubble(dialogueNode, btn) {
+       function showBubble(dialogueNode, btn) {
   dialogueOpen = true;
-  // Bubble positioning: left of button
   let bubble = document.getElementById('npc-bubble');
   if (!bubble) {
     bubble = document.createElement('div');
@@ -500,31 +565,29 @@ function showBubble(dialogueNode, btn) {
     document.body.appendChild(bubble);
   }
   const bcr = btn.getBoundingClientRect();
-  // Position: center vertically, left of the button
+  // Position: right-middle of button
   bubble.style.position = 'absolute';
-  bubble.style.left = (window.scrollX + bcr.left - 15) + 'px';
+  bubble.style.left = (window.scrollX + bcr.right + 16) + 'px';
   bubble.style.top = (window.scrollY + bcr.top + bcr.height/2) + 'px';
-  bubble.style.transform = 'translate(-100%, -50%)';
+  bubble.style.transform = 'translate(0, -50%)';
   bubble.style.zIndex = 2000;
 
   bubble.innerHTML = `
     <div class="bubble-box textbox-bubble">
-      <div class="npc-name" style="display:none">Scale Guardian</div>
+      <div class="npc-name">Scale Guardian</div>
       <div class="npc-line-textbox"></div>
       <div class="npc-options" style="display:none"></div>
-      <div class="bubble-tail textbox-tail"></div>
+      <div class="textbox-tail textbox-tail-left"></div>
     </div>
   `;
   const lineBox = bubble.querySelector('.npc-line-textbox');
   const optArea = bubble.querySelector('.npc-options');
 
-  // Typewriter effect
-  let fullText = dialogueNode.npc, idx = 0;
-  optArea.style.display = "none";
+  // Typewriter Effect (smooth, no caret)
+  let fullText = dialogueNode.npc, idx = 0, speed = 20; // ms per char
   lineBox.textContent = "";
 
   function showChoicesWhenDone() {
-    // After typewriter, reveal choices or grant access
     if (dialogueNode.options && dialogueNode.options.length > 0) {
       optArea.innerHTML = '';
       dialogueNode.options.forEach((opt, i) => {
@@ -549,32 +612,21 @@ function showBubble(dialogueNode, btn) {
         dialogueOpen = false;
         btn.classList.remove('npc-guardian');
         btn.disabled = false;
-        if (typeof activateSection === 'function') {
-          activateSection('fraction-section');
-        }
+        if (typeof activateSection === 'function') activateSection('fraction-section');
       }, 1200);
     }
   }
 
   function typeStep() {
-    lineBox.textContent = fullText.slice(0, idx) + (idx % 2 === 0 ? '\u258B' : ''); // blinking caret at end
+    lineBox.textContent = fullText.slice(0, idx);
     if (idx < fullText.length) {
       idx++;
-      setTimeout(typeStep, 16 + Math.random() * 32); // varied speed
+      setTimeout(typeStep, speed);
     } else {
-      lineBox.textContent = fullText;
       showChoicesWhenDone();
     }
   }
-
-  // Show the name bar for "textbox" style
-  bubble.querySelector('.npc-name').style.display = '';
   typeStep();
-}
-
-function renderDialogue(btn) {
-  const d = dialogueTree[npcState.id || (isReturn ? 'return-root' : 'root')];
-  showBubble(d, btn);
 }
 </script>
       <button class="section-link" data-section="seq-section">Pattern Tracker</button>
