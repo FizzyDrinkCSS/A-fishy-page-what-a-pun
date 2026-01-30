@@ -198,18 +198,21 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
       <button class="section-link" data-section="gcf-section">Greatest Carp/Fish Match</button>
  <button class="section-link"  id="scale-simplifier-btn">Scale Simplifier</button>
 <div id="npc-dialogue" style="display:none;"></div>
-      <script>// ========== Persistent User State ==========
+      <script>// ========= NPC Scale Guardian Script =========
+
+// Persistent session
 let npcState = JSON.parse(sessionStorage.getItem('scaleNpcState') || '{}');
 if (!npcState.sessionCount) npcState.sessionCount = 0;
 if (!npcState.completed) npcState.completed = false;
 npcState.sessionCount++;
-let isReturn = npcState.sessionCount > 1;
 npcState.completed = false;
 sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
 
+// One session only: return variant flag (true if not first open)
+const isReturn = npcState.sessionCount > 1;
+
 let dialogueOpen = false;
 
-// ======= DIALOG TREE with RETURN VARIANT ROOT ======
 const dialogueTree = {
   root: {
     npc: "Halt! Only true scale simplifiers may enter my domain. State your intent...",
@@ -219,67 +222,29 @@ const dialogueTree = {
       { text: "Can I bribe you?", next: "bribe-try" }
     ]
   },
-  'return-root': {
-    npc: "Ah, it's you again! You know the drill. What will it be?",
-    options: [
-      { text: "Test me harder!", next: "test-hard-1" },
-      { text: "A joke!", next: "joke-3" },
-      { text: "Let me in!", next: "let-in" }
-    ]
-  },
-  'let-in': {
-    npc: "You've earned it. Welcome, old friend.",
-    grantAccess: true
-  },
-  // TESTS
   'test-intro': {
     npc: "First: What is 1/2 + 1/4?",
     options: [
       { text: "3/4", next: "test-pass" },
-      { text: "2/6", next: "test-wrong-1" }
-    ]
-  },
-  'test-hard-1': {
-    npc: "Advanced: (3/4) x (2/5) = ?",
-    options: [
-      { text: "3/10", next: "test-hard-pass" },
-      { text: "6/9", next: "test-hard-wrong" }
+      { text: "2/6", next: "test-fail" }
     ]
   },
   'test-pass': {
     npc: "You are worthy. Welcome to the scales!",
     grantAccess: true
   },
-  'test-hard-pass': {
-    npc: "You are a master. Enter freely.",
-    grantAccess: true
-  },
-  'test-wrong-1': {
-    npc: "Not quite. Try again?",
+  'test-fail': {
+    npc: "Not quite. Try again!",
     options: [
-      { text: "Yes!", next: "test-intro" }
+      { text: "Retry", next: "test-intro" }
     ]
   },
-  'test-hard-wrong': {
-    npc: "Even masters must review. Try again?",
-    options: [
-      { text: "Retry!", next: "test-hard-1" }
-    ]
-  },
-  // JOKES
   'joke-1': {
-    npc: "What do you call a fraction with no denominator? Trouble!",
+    npc: "What do you call a fish with no eyes? Fsh!",
     options: [
       { text: "Groan.", next: "root" }
     ]
   },
-  'joke-3': {
-    npc: "Why did the math book look sad? Too many problems.",
-    options: [
-      { text: "Haha!", next: "return-root" }
-    ]
-  },
-  // BRIBE
   'bribe-try': {
     npc: "Hmm. What are you offering?",
     options: [
@@ -299,7 +264,7 @@ const dialogueTree = {
     grantAccess: true
   },
   'bribe-fail': {
-    npc: "Raisin?! Farewell.",
+    npc: "Raisin?! My only nemesis. Try again.",
     options: [
       { text: "Sorry!", next: "root" }
     ]
@@ -307,10 +272,77 @@ const dialogueTree = {
   'bribe-compliment': {
     npc: "Oh, you charmer! Door's open.",
     grantAccess: true
+  },
+  // ========= RETURN DIALOGUE =========
+  'return-root': {
+    npc: "Ah, it's you again! Think you can pass my test twice?",
+    options: [
+      { text: "Make it harder!", next: "return-test1" },
+      { text: "Just let me in!", next: "bribe-compliment" },
+      { text: "Tell me a joke.", next: "joke-2" }
+    ]
+  },
+  'return-test1': {
+    npc: "Advanced: (3/4) x (2/5) = ?",
+    options: [
+      { text: "3/10", next: "return-pass" },
+      { text: "6/9", next: "return-fail" }
+    ]
+  },
+  'return-pass': {
+    npc: "You are relentless and correct. Come in, old friend!",
+    grantAccess: true
+  },
+  'return-fail': {
+    npc: "Nope! Even pros need practice.",
+    options: [
+      { text: "Try again!", next: "return-test1" }
+    ]
+  },
+  'joke-2': {
+    npc: "Why did the math book look sad? Too many problems.",
+    options: [
+      { text: "Haha!", next: "return-root" }
+    ]
   }
 };
-// ========== Speech Bubble ==========
-// Place bubble above button, with a pointer "tail"
+
+// ========== Eyes (centered) ==========
+function spawnEyes(btn) {
+  if (btn.querySelector('.npc-eyes')) return;
+  const eyes = document.createElement('div');
+  eyes.className = 'npc-eyes';
+  eyes.innerHTML = `
+    <span class="npc-eye"><span class="npc-pupil"></span><span class="npc-glint"></span></span>
+    <span class="npc-eye"><span class="npc-pupil"></span><span class="npc-glint"></span></span>
+  `;
+  // Center over button content
+  btn.style.position = 'relative';
+  eyes.style.position = "absolute";
+  eyes.style.left = "50%";
+  eyes.style.top = "50%";
+  eyes.style.transform = "translate(-50%, -50%)";
+  eyes.style.pointerEvents = "none";
+  eyes.style.display = "flex";
+  eyes.style.gap = "9px";
+  btn.appendChild(eyes);
+  function movePupils(e) {
+    [...eyes.children].forEach(eye => {
+      const pupil = eye.querySelector('.npc-pupil');
+      const rect = eye.getBoundingClientRect();
+      let cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+      let dx = e.clientX - cx, dy = e.clientY - cy;
+      const maxD = 8, dist = Math.sqrt(dx*dx+dy*dy);
+      if (dist > maxD && dist !== 0) {
+        dx = (dx/dist)*maxD; dy = (dy/dist)*maxD;
+      }
+      pupil.style.transform = `translate(${dx}px,${dy}px)`;
+    });
+  }
+  window.addEventListener('mousemove', movePupils);
+}
+
+// ========== Speech Bubble ===
 function showBubble(dialogueNode, btn) {
   dialogueOpen = true;
   // create bubble if not present
@@ -322,10 +354,10 @@ function showBubble(dialogueNode, btn) {
   }
   const bcr = btn.getBoundingClientRect();
   bubble.style.position = 'absolute';
-  bubble.style.zIndex = 9999;
-  bubble.style.left = (window.scrollX + bcr.left + bcr.width / 2) + 'px';
-  bubble.style.top = (window.scrollY + bcr.top - 20) + 'px';
+  bubble.style.left = (window.scrollX + bcr.left + bcr.width/2) + 'px';
+  bubble.style.top = (window.scrollY + bcr.top - 14) + 'px';
   bubble.style.transform = 'translate(-50%, -100%)';
+  bubble.style.zIndex = 2000;
 
   bubble.innerHTML = `
     <div class="bubble-box">
@@ -354,72 +386,37 @@ function showBubble(dialogueNode, btn) {
     setTimeout(() => {
       npcState.completed = true;
       sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
-      // Remove bubble+eyes, simulate main button click
       bubble.remove();
       dialogueOpen = false;
       btn.classList.remove('npc-guardian');
       btn.disabled = false;
-      // Simulate real button click
-      btn.setAttribute('data-npc-done','1');
-      btn.click();
-    }, 1700);
-  }
-}
-// =========== EYES ===========
-function spawnEyes(btn) {
-  if (btn.querySelector('.npc-eyes')) return;
-  const eyes = document.createElement('div');
-  eyes.className = 'npc-eyes';
-  eyes.innerHTML = `
-    <span class="npc-eye"><span class="npc-pupil"></span><span class="npc-glint"></span></span>
-    <span class="npc-eye"><span class="npc-pupil"></span><span class="npc-glint"></span></span>
-  `;
-  btn.style.position = 'relative';
-  btn.appendChild(eyes);
-  eyes.style.position = "absolute";
-  eyes.style.left = "50%";
-  eyes.style.top = "50%";
-  eyes.style.transform = "translate(-50%, -50%)";
-  eyes.style.pointerEvents = "none";
-  eyes.style.display = "flex";
-  eyes.style.gap = "9px";
-  // Animate
-  function movePupils(e) {
-    [...eyes.children].forEach(eye => {
-      const pupil = eye.querySelector('.npc-pupil');
-      const rect = eye.getBoundingClientRect();
-      let cx = rect.left + rect.width / 2,
-        cy = rect.top + rect.height / 2;
-      let dx = e.clientX - cx,
-        dy = e.clientY - cy;
-      const maxD = 8,
-        dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist > maxD && dist !== 0) {
-        dx = (dx / dist) * maxD;
-        dy = (dy / dist) * maxD;
+      // ACTIVATE the section as if user truly clicked!
+      if (typeof activateSection === 'function') {
+        activateSection('fraction-section');
       }
-      pupil.style.transform = `translate(${dx}px,${dy}px)`;
-    });
+    }, 1350);
   }
-  window.addEventListener('mousemove', movePupils);
 }
+
 function renderDialogue(btn) {
   const d = dialogueTree[npcState.id || (isReturn ? 'return-root' : 'root')];
   showBubble(d, btn);
 }
 
-// ============== HOOKUP ==============
-const btn = document.querySelector('[data-section="fraction-section"]');
+// ========= Attach to the button as per your HTML
+const btn = document.getElementById('scale-simplifier-btn');
 btn.addEventListener('click', function (e) {
-  // Only intercept on first activation / when not yet completed
-  if (dialogueOpen || npcState.completed || btn.getAttribute('data-npc-done') === '1') return;
-  e.preventDefault();
+  if (dialogueOpen || npcState.completed) return;
+  // Block default SPA section change by the button
+  e.preventDefault?.();
   spawnEyes(btn);
   btn.disabled = true;
   npcState.id = isReturn ? 'return-root' : 'root';
   sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
   renderDialogue(btn);
-});
+}, true); // <--- use {capture:true} if your framework fights you
+
+// ========== End of Script ==========
 </script>
       <button class="section-link" data-section="seq-section">Pattern Tracker</button>
       <button class="section-link" data-section="decimal-section">Convert: Scales → Fins</button>
