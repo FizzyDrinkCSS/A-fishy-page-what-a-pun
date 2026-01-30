@@ -175,6 +175,77 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
 .npc-options button:hover {
   background:#fff9e4; border-color:#ffcc44;
 }
+    .textbox-bubble {
+  background: #232838;
+  color: #e4eaf4;
+  border-radius: 10px;
+  min-width: 210px;
+  box-shadow: 0 2px 11px #0009;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 1.08em;
+  border: 2.4px solid #7bf9ea;
+  position: relative;
+  text-align: left;
+  pointer-events: auto;
+  padding: 0.9em 1.2em 1.2em 1.1em;
+  margin-right: 14px;
+}
+.textbox-bubble .npc-name {
+  font-size:0.93em;
+  font-weight:bold;
+  color: #35cffb;
+  padding-bottom: 2px;
+  letter-spacing: 0.5px;
+}
+.npc-line-textbox {
+  font-size: 1.05em;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  color: #f4fff7;
+  letter-spacing:0.04em;
+  min-height: 1.4em;
+  margin-bottom: 0.8em;
+  background:#171a2a;
+  border-radius: 7px;
+  padding: 0.38em 0.5em;
+  border: 1.3px solid #31364a;
+  box-shadow: 0 1.5px 5px #2339;
+  word-break: break-word;
+}
+.textbox-tail {
+  width:25px;
+  height:32px;
+  position: absolute;
+  right: -24px;
+  top:50%;
+  transform: translateY(-50%);
+}
+.textbox-tail:after {
+  content:"";
+  display:block;
+  width:25px; height:24px;
+  background: #232838;
+  border-radius: 0 50% 40% 0/40% 60% 60% 25%;
+  border-right: 2.4px solid #7bf9ea;
+  box-shadow: 8px 1px 9px -5px #091017;
+  position: absolute; left:0; top:0;
+}
+
+.bubble-box .npc-options button {
+  margin: 0.4em 0.6em 0 0;
+  background: #fff;
+  color: #294666;
+  border: 1.2px solid #7bf9ea;
+  border-radius: 7px;
+  padding: 7px 16px;
+  font-size: 1em;
+  font-family: inherit;
+  box-shadow: 0 2px 7px #1bfdf850;
+  cursor: pointer;
+  transition:.11s;
+}
+.bubble-box .npc-options button:hover {
+  background:#e2faff; border-color:#3bf0ea;
+}
   </style>
 </head>
 <body>
@@ -417,6 +488,94 @@ btn.addEventListener('click', function (e) {
 }, true); // <--- use {capture:true} if your framework fights you
 
 // ========== End of Script ==========
+        // ... (your previous initializations remain unchanged -- keep all npcState, dialogueTree, spawnEyes, etc)
+
+function showBubble(dialogueNode, btn) {
+  dialogueOpen = true;
+  // Bubble positioning: left of button
+  let bubble = document.getElementById('npc-bubble');
+  if (!bubble) {
+    bubble = document.createElement('div');
+    bubble.id = 'npc-bubble';
+    document.body.appendChild(bubble);
+  }
+  const bcr = btn.getBoundingClientRect();
+  // Position: center vertically, left of the button
+  bubble.style.position = 'absolute';
+  bubble.style.left = (window.scrollX + bcr.left - 15) + 'px';
+  bubble.style.top = (window.scrollY + bcr.top + bcr.height/2) + 'px';
+  bubble.style.transform = 'translate(-100%, -50%)';
+  bubble.style.zIndex = 2000;
+
+  bubble.innerHTML = `
+    <div class="bubble-box textbox-bubble">
+      <div class="npc-name" style="display:none">Scale Guardian</div>
+      <div class="npc-line-textbox"></div>
+      <div class="npc-options" style="display:none"></div>
+      <div class="bubble-tail textbox-tail"></div>
+    </div>
+  `;
+  const lineBox = bubble.querySelector('.npc-line-textbox');
+  const optArea = bubble.querySelector('.npc-options');
+
+  // Typewriter effect
+  let fullText = dialogueNode.npc, idx = 0;
+  optArea.style.display = "none";
+  lineBox.textContent = "";
+
+  function showChoicesWhenDone() {
+    // After typewriter, reveal choices or grant access
+    if (dialogueNode.options && dialogueNode.options.length > 0) {
+      optArea.innerHTML = '';
+      dialogueNode.options.forEach((opt, i) => {
+        const b = document.createElement('button');
+        b.textContent = opt.text;
+        b.onclick = () => {
+          npcState.history = npcState.history || [];
+          npcState.history.push({ id: npcState.id, choice: i });
+          npcState.id = opt.next;
+          sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
+          renderDialogue(btn);
+        };
+        optArea.appendChild(b);
+      });
+      optArea.style.display = "";
+    }
+    if (dialogueNode.grantAccess) {
+      setTimeout(() => {
+        npcState.completed = true;
+        sessionStorage.setItem('scaleNpcState', JSON.stringify(npcState));
+        bubble.remove();
+        dialogueOpen = false;
+        btn.classList.remove('npc-guardian');
+        btn.disabled = false;
+        if (typeof activateSection === 'function') {
+          activateSection('fraction-section');
+        }
+      }, 1200);
+    }
+  }
+
+  function typeStep() {
+    lineBox.textContent = fullText.slice(0, idx) + (idx % 2 === 0 ? '\u258B' : ''); // blinking caret at end
+    if (idx < fullText.length) {
+      idx++;
+      setTimeout(typeStep, 16 + Math.random() * 32); // varied speed
+    } else {
+      lineBox.textContent = fullText;
+      showChoicesWhenDone();
+    }
+  }
+
+  // Show the name bar for "textbox" style
+  bubble.querySelector('.npc-name').style.display = '';
+  typeStep();
+}
+
+function renderDialogue(btn) {
+  const d = dialogueTree[npcState.id || (isReturn ? 'return-root' : 'root')];
+  showBubble(d, btn);
+}
 </script>
       <button class="section-link" data-section="seq-section">Pattern Tracker</button>
       <button class="section-link" data-section="decimal-section">Convert: Scales → Fins</button>
