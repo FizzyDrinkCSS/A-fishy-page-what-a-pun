@@ -335,7 +335,7 @@ code.inline{ background:#2a2768; padding:0.09em 0.19em; border-radius:3px; font-
       <button class="section-link" data-section="quad-section">Gillactic Solver</button>
       <button class="section-link" data-section="factoring-section">Species Sorter</button>
       <button class="section-link" data-section="gcf-section">Greatest Carp/Fish Match</button>
- <button class="section-link"  id="scale-simplifier-btn">Scale Simplifier</button>
+<button class="section-link"  id="scale-simplifier-btn">Scale Simplifier</button>
 <div id="npc-dialogue" style="display:none;"></div>
       <script>// ========= NPC Scale Guardian Script =========
 
@@ -375,8 +375,8 @@ const dialogueTree = {
   'denial-trench-2': {
     npc: "Lucky guess, Salmon! If you are human, you must know 'Taxation'. Simplify the tax of 100/400.",
     options: [
-      { text: "1/4", next: "denial-trench-3" },
-      { text: "25/100", next: "fail-unsimplified" }
+      { text: "1/4", next: "fail-unsimplified" },
+      { text: "25/100", next: "denial-trench-3" }
     ]
   },
   // ... (Repeat logic for nodes 3-20 involving 'Human' trivia like 'Why do you walk on dry air?')
@@ -439,8 +439,9 @@ const dialogueTree = {
 
   // ================= SYSTEM NODES (REUSABLE) =================
   'fail-unsimplified': {
-    npc: "Ugh! That's like wearing a tuxedo made of seaweed. It's the right idea, but it's MESSY! Try again.",
-    options: [{ text: "Clean it up (Return)", next: "root" }]
+    npc: "Ugh! You are too smart to be a human, you must be a fishy-fishy. Fuck you!",
+        grantAccess: true
+    options: [{ text: "Fuck off?  ", next: "root" }]
   },
   'math-fail-reboot': {
     npc: "Your brain is as slow as a slug on a salt flat. Back to the tide pools with you!",
