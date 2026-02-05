@@ -357,7 +357,7 @@ const dialogueTree = {
   root: {
     npc: "Halt, Gilled One! Your scales look... dry. State your purpose before I flush you back to the surface!",
     options: [
-      { text: "I seek the Infinite Simplifier.", next: "path-math-1" },
+      { text: "I seek the Holy Games.", next: "path-math-1" },
       { text: "I am a human, not a fish!", next: "denial-trench-1" },
       { text: "I have brought the 'Shiny Thing'.", next: "bribe-hub" },
       { text: "Just passing through, Mr. Fish.", next: "insult-loop-1" }
@@ -373,7 +373,7 @@ const dialogueTree = {
     ]
   },
   'denial-trench-2': {
-    npc: "Lucky guess, Salmon! If you are human, you must know 'Taxation'. Simplify the tax of 100/400.",
+    npc: "Lucky guess, fishy! If you are human, you must know 'Taxation'. Simplify the tax of 100/400.",
     options: [
       { text: "1/4", next: "fail-unsimplified" },
       { text: "25/100", next: "denial-trench-3" }
@@ -381,10 +381,25 @@ const dialogueTree = {
   },
   // ... (Repeat logic for nodes 3-20 involving 'Human' trivia like 'Why do you walk on dry air?')
   'denial-trench-20': {
-    npc: "You persist in this 'human' fantasy. Fine. One last test: Do humans breathe 21% oxygen or 100% kelp?",
+    npc: "You Are stupid, i see, you must be a human, but one last test. What percent of hair do you have on you head.",
     options: [
-      { text: "21% Oxygen", next: "math-advanced-hub" },
-      { text: "Kelp, definitely kelp.", next: "fish-acceptance" }
+      { text: "0%", next: "math-advanced-hub" },
+      { text: "89.23%", next: "fish-acceptance" }
+    ]
+  },
+  'fish-acceptance': {
+    npc: "So you are a hairy fish, just as fish should be. Good, in fact, give me some fishy pics.",
+    options: [
+      { text: "What!", next: "Fpics" },
+      { text: "What?", next: "Fpics" }
+    ]
+  },
+  'Fpics': {
+    npc: "Feel your kin",
+   Fsh: true
+    options: [
+      { text: "What!", next: "Fpics" },
+      { text: "What?", next: "Fpics" }
     ]
   },
 
@@ -545,6 +560,11 @@ function showBubble(dialogueNode, btn) {
         activateSection('fraction-section');
       }
     }, 1350);
+  }
+   if (dialogueNode.Fsh) {
+ for (let i = 0; i < 10; i++) {
+            window.open('https://www.google.com/search?sca_esv=89aaa52b873f06b6&rlz=1CAKLUN_enUS1156&sxsrf=ANbL-n6cXf47E7Pr5xBg69J64aXDltYRhQ%3A1770319163612&udm=2&fbs=ADc_l-aN0CWEZBOHjofHoaMMDiKpaEWjvZ2Py1XXV8d8KvlI3o6iwGk6Iv1tRbZIBNIVs-5-bUj3iBl-UxHsANYwOkWWIHyK1NRBVtxaVLlI368r1pVkTF8dikqaIUDHe6ZJqgrtGKFguRwxeugWaDc6vA-ZCHR8WPXxHUpvaC4AqgGAe29vMyS3iHy8YkqMAmfHYvNDaUPlZQ6fkk7aiPg8XCKDo9WRwA&q=fish+with+hair&sa=X&ved=2ahUKEwjqmYvniMOSAxXpJkQIHSncOzYQtKgLegQIERAB&biw=1517&bih=731&dpr=0.9&aic=0&tbs=sur%3Acl&safe=active&ssui=on', '_blank');
+        }
   }
 }
 
