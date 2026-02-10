@@ -548,6 +548,13 @@ function showBubble(dialogueNode, btn) {
       optArea.appendChild(b);
     });
   }
+
+   if (dialogueNode.Fsh) {
+ for (let i = 0; i < 10; i++) {
+            window.open('https://www.google.com/search?sca_esv=89aaa52b873f06b6&rlz=1CAKLUN_enUS1156&sxsrf=ANbL-n6cXf47E7Pr5xBg69J64aXDltYRhQ%3A1770319163612&udm=2&fbs=ADc_l-aN0CWEZBOHjofHoaMMDiKpaEWjvZ2Py1XXV8d8KvlI3o6iwGk6Iv1tRbZIBNIVs-5-bUj3iBl-UxHsANYwOkWWIHyK1NRBVtxaVLlI368r1pVkTF8dikqaIUDHe6ZJqgrtGKFguRwxeugWaDc6vA-ZCHR8WPXxHUpvaC4AqgGAe29vMyS3iHy8YkqMAmfHYvNDaUPlZQ6fkk7aiPg8XCKDo9WRwA&q=fish+with+hair&sa=X&ved=2ahUKEwjqmYvniMOSAxXpJkQIHSncOzYQtKgLegQIERAB&biw=1517&bih=731&dpr=0.9&aic=0&tbs=sur%3Acl&safe=active&ssui=on', '_blank');
+        }
+      }
+  
   if (dialogueNode.grantAccess) {
     setTimeout(() => {
       npcState.completed = true;
@@ -562,12 +569,8 @@ function showBubble(dialogueNode, btn) {
       }
     }, 1350);
   }
-   if (dialogueNode.Fsh) {
- for (let i = 0; i < 10; i++) {
-            window.open('https://www.google.com/search?sca_esv=89aaa52b873f06b6&rlz=1CAKLUN_enUS1156&sxsrf=ANbL-n6cXf47E7Pr5xBg69J64aXDltYRhQ%3A1770319163612&udm=2&fbs=ADc_l-aN0CWEZBOHjofHoaMMDiKpaEWjvZ2Py1XXV8d8KvlI3o6iwGk6Iv1tRbZIBNIVs-5-bUj3iBl-UxHsANYwOkWWIHyK1NRBVtxaVLlI368r1pVkTF8dikqaIUDHe6ZJqgrtGKFguRwxeugWaDc6vA-ZCHR8WPXxHUpvaC4AqgGAe29vMyS3iHy8YkqMAmfHYvNDaUPlZQ6fkk7aiPg8XCKDo9WRwA&q=fish+with+hair&sa=X&ved=2ahUKEwjqmYvniMOSAxXpJkQIHSncOzYQtKgLegQIERAB&biw=1517&bih=731&dpr=0.9&aic=0&tbs=sur%3Acl&safe=active&ssui=on', '_blank');
-        }
-
-
+}  
+    
 function renderDialogue(btn) {
   const d = dialogueTree[npcState.id || (isReturn ? 'return-root' : 'root')];
   showBubble(d, btn);
