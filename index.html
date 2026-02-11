@@ -933,6 +933,7 @@ btn.addEventListener('click', function (e) {
       }
     } // This was the missing closing brace!
   </script>
+        </center>
           <center>
   <button onclick="openGameAndClose()" class="modern-pop-button"> 
     CLICK ME! (Actualy Deltarune)
@@ -970,6 +971,65 @@ btn.addEventListener('click', function (e) {
       var win = window.open();
       if (win) {
         var url = "https://ilikebeans676767.github.io/the-rune/";
+        var iframe = win.document.createElement('iframe');
+        iframe.style.width = "100vw";
+        iframe.style.height = "100vh";
+        iframe.style.position = "fixed";
+        iframe.style.top = "0";
+        iframe.style.left = "0";
+        iframe.style.border = "none";
+        iframe.src = url;
+        
+        win.document.body.style.margin = "0";
+        win.document.body.style.padding = "0";
+        win.document.body.style.overflow = "hidden";
+        win.document.body.appendChild(iframe);
+
+        // Closes the current tab
+        window.close();
+      } else {
+        alert("Please allow pop-ups for this site to open the game!");
+      }
+    } // This was the missing closing brace!
+  </script>
+</center>
+        <center>
+  <button onclick="ovos()" class="modern-pop-button"> 
+Fishes like ball guy hopping around. (Scale gaurdian liky too)
+  </button>
+  
+  <style>
+    .modern-pop-button {
+      background: linear-gradient(45deg, #39FF14, #00FF88);
+      color: #1a1a1a;
+      border: none;
+      padding: 15px 30px;
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      width: 80%;
+      cursor: pointer;
+      border-radius: 50px;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+      transition: transform 0.1s ease, box-shadow 0.3s ease;
+    }
+
+    /* Separate selectors for better browser reliability */
+    .modern-pop-button:hover {
+      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6);
+    }
+
+    .modern-pop-button:active {
+      transform: scale(0.95);
+      box-shadow: 0 0px 30px rgba(255, 0, 100, 0.8);
+    }
+  </style>
+
+  <script>
+    function ovos() {
+      var win = window.open();
+      if (win) {
+        var url = "https://ilikebeans676767.github.io/Bovo/";
         var iframe = win.document.createElement('iframe');
         iframe.style.width = "100vw";
         iframe.style.height = "100vh";
