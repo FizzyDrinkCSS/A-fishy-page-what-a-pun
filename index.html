@@ -1121,13 +1121,12 @@ Hophop
 <div id="tr-ov" style="display:none;position:fixed;inset:0;z-index:2147483647;overflow:hidden;cursor:none;background:#0a0a0a;"></div>
 
 <style>
- margin-top: 20px;    
-margin-bottom: 20px; 
+ 
 .tr-cur{position:fixed;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);}
 .tr-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(57,255,20,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(57,255,20,.025) 1px,transparent 1px);background-size:50px 50px;}
 .tr-scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.1) 2px,rgba(0,0,0,.1) 4px);}
 #tr-bwrap{position:absolute;transform:translate(-50%,-50%);z-index:100;}
-#tr-btn{background:#39FF14;color:#000;border:3px solid #00ff88;font-size:20px;font-family:'Bungee',cursive,sans-serif;padding:15px 44px;border-radius:12px;cursor:none;letter-spacing:2px;white-space:nowrap;box-shadow:0 0 18px #39FF14,0 0 36px rgba(57,255,20,.3);}
+#tr-btn{margin-top: 20px;margin-bottom: 20px;background:#39FF14;color:#000;border:3px solid #00ff88;font-size:20px;font-family:'Bungee',cursive,sans-serif;padding:15px 44px;border-radius:12px;cursor:none;letter-spacing:2px;white-space:nowrap;box-shadow:0 0 18px #39FF14,0 0 36px rgba(57,255,20,.3);}
 #tr-stat{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:clamp(10px,2vw,14px);color:#39FF14;text-align:center;letter-spacing:2px;text-shadow:0 0 8px #39FF14;pointer-events:none;z-index:500;opacity:0;transition:opacity .3s;max-width:86vw;font-family:'Share Tech Mono',monospace;}
 #tr-stat.on{opacity:1;}
 .tr-tk{position:absolute;pointer-events:none;z-index:9000;font-family:'Bungee',cursive,sans-serif;animation:trTK 1.6s ease-out forwards;}
@@ -1337,7 +1336,7 @@ function _buildHTML(){
   '<div id="tr-ac"><div id="tr-ac-toast">btw you could\'ve just<br> Not bulled me<br><br>that was like a hour<br>of your life. gone.</div></div>';
 }
 
-function _initBase(){
+/* function _initBase(){
   ov.addEventListener('mousemove',function(e){
     mx=e.clientX;my=e.clientY;
     var c=document.getElementById('tr-cur0');if(c){c.style.left=mx+'px';c.style.top=my+'px';}
@@ -1357,7 +1356,7 @@ function _initBase(){
   },16);
   document.addEventListener('keydown',_kd);
   setTimeout(function(){var b=document.getElementById('tr-btn');if(b)b.addEventListener('click',_bc);},200);
-}
+} */
 
 /* ─ OPENING SCREEN ─ */
 function _openScreen(){
