@@ -1336,7 +1336,7 @@ function _buildHTML(){
   '<div id="tr-ac"><div id="tr-ac-toast">btw you could\'ve just<br> Not bulled me<br><br>that was like a hour<br>of your life. gone.</div></div>';
 }
 
-/* function _initBase(){
+ /* function _initBase(){
   ov.addEventListener('mousemove',function(e){
     mx=e.clientX;my=e.clientY;
     var c=document.getElementById('tr-cur0');if(c){c.style.left=mx+'px';c.style.top=my+'px';}
@@ -1357,6 +1357,16 @@ function _buildHTML(){
   document.addEventListener('keydown',_kd);
   setTimeout(function(){var b=document.getElementById('tr-btn');if(b)b.addEventListener('click',_bc);},200);
 } */
+  function _initBase(){
+  
+  document.addEventListener('keydown', _kd);
+
+ 
+  setTimeout(function(){
+    var b = document.getElementById('tr-btn');
+    if (b) b.addEventListener('click', _bc);
+  }, 200);
+}
 
 /* ─ OPENING SCREEN ─ */
 function _openScreen(){
