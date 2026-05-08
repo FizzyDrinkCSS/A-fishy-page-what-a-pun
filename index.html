@@ -1088,7 +1088,7 @@ Hophop
     function hop() {
       var win = window.open();
       if (win) {
-        var url = "https://ilikebeans676767.github.io/Gladhop/";
+        var url = "https://ilikebeans676767.github.io/mrbob/";
         var iframe = win.document.createElement('iframe');
         iframe.style.width = "100vw";
         iframe.style.height = "100vh";
@@ -1170,6 +1170,117 @@ Hophop
     } // This was the missing closing brace!
   </script>
         </center>
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Launcher</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #111;
+      font-family: Arial, sans-serif;
+    }
+
+    .button {
+      border: none;
+      border-radius: 6px;
+      background: #39FF14;
+      color: #fff;
+      font-size: 28px;
+      padding: 18px 28px;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      filter: brightness(1.05);
+    }
+  </style>
+</head>
+<body>
+  <button class="button" id="launchBtn">Fullscreen</button>
+
+  <script>
+    const gameUrl = "https://ilikebeans676767.github.io/sm64/";
+    let win;
+
+    document.getElementById("launchBtn").addEventListener("click", function () {
+      if (win && !win.closed) {
+        win.focus();
+        return;
+      }
+
+      win = window.open("about:blank", "_blank");
+
+      if (!win) {
+        alert("Popup blocked. Allow popups for this site.");
+        return;
+      }
+
+      win.document.open();
+      win.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Google</title>
+          <style>
+            html, body {
+              margin: 0;
+              width: 100%;
+              height: 100%;
+              overflow: hidden;
+              background: #000;
+            }
+
+            iframe {
+              display: block;
+              width: 100vw;
+              height: 100vh;
+              border: none;
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+        </head>
+        <body>
+          <iframe
+            id="gameFrame"
+            src="${gameUrl}"
+            allow="fullscreen; autoplay; gamepad; pointer-lock"
+            allowfullscreen
+            referrerpolicy="no-referrer">
+          </iframe>
+
+          <script>
+            const frame = document.getElementById("gameFrame");
+
+            function focusFrame() {
+              try {
+                frame.focus();
+              } catch (e) {}
+            }
+
+            window.addEventListener("load", focusFrame);
+            document.addEventListener("click", focusFrame, true);
+            window.addEventListener("keydown", focusFrame, true);
+          <\/script>
+        </body>
+        </html>
+      `);
+      win.document.close();
+    });
+  </script>
+</body>
+</html>
+
 
 
 <center>
